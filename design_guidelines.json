@@ -1,0 +1,118 @@
+{
+  "theme": "Light",
+  "archetype": "1 (Organic & Earthy)",
+  "emotional_tone": "Cinematic, authentic, premium, trustworthy, editorial",
+  "design_philosophy": "Sri Lanka, the way locals live it. A travel-magazine aesthetic leaning into deep jungle greens, warm sand, terracotta accents, and rich blacks. Asymmetric layouts, lots of whitespace, full-bleed imagery, subtle grain/texture, and slow cinematic motion.",
+  "colors": {
+    "background_base": "#F9F6F0",
+    "background_alt": "#F2EDE4",
+    "background_dark": "#1A362D",
+    "primary": "#1A362D",
+    "primary_hover": "#142A23",
+    "accent": "#C05A45",
+    "accent_hover": "#A64A37",
+    "text_main": "#111827",
+    "text_muted": "#4B5563",
+    "text_inverse": "#F9F6F0",
+    "border_light": "#E5DFD3",
+    "border_dark": "#2C4A3E"
+  },
+  "typography": {
+    "font_heading": "'Cormorant Garamond', serif",
+    "font_body": "'DM Sans', sans-serif",
+    "font_accent": "'DM Sans', sans-serif",
+    "h1_style": "text-5xl sm:text-6xl lg:text-7xl font-light tracking-tighter leading-none text-[#111827]",
+    "h2_style": "text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-[#111827]",
+    "h3_style": "text-2xl sm:text-3xl font-medium tracking-tight text-[#111827]",
+    "body_style": "text-base lg:text-lg leading-relaxed text-[#4B5563]",
+    "overline_style": "text-xs font-bold uppercase tracking-[0.2em] text-[#C05A45]"
+  },
+  "spacing_and_layout": {
+    "section_padding": "py-24 md:py-32",
+    "container": "max-w-7xl mx-auto px-6 md:px-12",
+    "grid_packages": "grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12",
+    "grid_experiences": "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4",
+    "border_radius": "rounded-2xl"
+  },
+  "motion_and_interactions": {
+    "hero_image": "Slow Ken Burns zoom effect (scale 1.0 to 1.1 over 20s) using framer-motion",
+    "scroll": "Smooth scroll momentum (Lenis recommended conceptually)",
+    "hover_cards": "Subtle -translate-y-1 and shadow-xl transition-all duration-300",
+    "whatsapp_pulse": "Continuous subtle scale pulse and ring animation for the floating CTA",
+    "nav_scroll": "Transparent at top, transitions to backdrop-blur-xl bg-[#F9F6F0]/80 with border-b border-[#E5DFD3] on scroll"
+  },
+  "components_strategy": {
+    "navigation": "Sticky top, logo left, links center, WhatsApp button right. Transparent to glassmorphism on scroll.",
+    "hero": "Full screen (min-h-screen). Absolute positioning for image with dark gradient overlay (bg-black/30) so text pops. Eyebrow text, large serif tagline, 2 CTAs.",
+    "trust_bar": "Strip below hero. Dark green background (#1A362D) with cream text. 4 items (licensed, rated, private, local) with icons.",
+    "why_us": "Asymmetric bento/split layout. 1 large lifestyle photo offset with 4 text pillars.",
+    "packages": "3 full-bleed photo cards. Aspect ratio 3:4. Overlay labels (Crystal Glassmorphism) at top right: 'Most Popular', 'Most Unique', 'Best for Couples'.",
+    "experiences": "Dark green section (#1A362D). 8-tile masonry or uniform grid of square images with subtle text overlays.",
+    "team": "2 profile cards. Warm authentic photography. Clean typography for bios.",
+    "reviews": "Testimonial slider or 3-column grid. Star ratings, quoted text, user location.",
+    "trip_builder": "Interactive form using Shadcn. Interest pills (toggleable), date picker, and submit button that triggers a WhatsApp deep-link.",
+    "blog": "3 article cards, image top, clean serif headline, read more link.",
+    "footer": "Deep green (#1A362D) background, large brand text, trust badges, minimal layout.",
+    "floating_whatsapp": "Fixed bottom-right, z-50, vibrant green but styled to fit organically, pulsing ring."
+  },
+  "media": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1621358670052-d34a786a9385?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Cinematic tea plantation hills - Hero"
+    },
+    "why_us_lifestyle": {
+      "url": "https://images.unsplash.com/photo-1742281095650-dd3c50c08772?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwxfHxzcmklMjBsYW5rYSUyMGZvb2R8ZW58MHx8fHwxNzc2NDg0MDAzfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Local food on a leaf - Why Us section"
+    },
+    "packages": [
+      {
+        "label": "Most Popular",
+        "title": "Classic Highlights",
+        "url": "https://images.unsplash.com/photo-1574611122955-5baa61496637?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMHRyYWlufGVufDB8fHx8MTc3NjQ4NDAwM3ww&ixlib=rb-4.1.0&q=85"
+      },
+      {
+        "label": "Most Unique",
+        "title": "Off-Beat Paths",
+        "url": "https://images.unsplash.com/photo-1534545872802-0579930815c2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwzfHxzcmklMjBsYW5rYSUyMGVsZXBoYW50fGVufDB8fHx8MTc3NjQ4Mzk5Nnww&ixlib=rb-4.1.0&q=85"
+      },
+      {
+        "label": "Best for Couples",
+        "title": "Coastal Escapes",
+        "url": "https://images.unsplash.com/photo-1653959747793-c7c3775665f0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxzcmklMjBsYW5rYSUyMGJlYWNofGVufDB8fHx8MTc3NjQ4NDAwM3ww&ixlib=rb-4.1.0&q=85"
+      }
+    ],
+    "experiences": [
+      { "title": "Rice & Curry", "url": "https://images.unsplash.com/photo-1619714604882-db1396d4a718?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAxODF8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMGZvb2R8ZW58MHx8fHwxNzc2NDg0MDAzfDA&ixlib=rb-4.1.0&q=85" },
+      { "title": "Tuk-Tuk Ride", "url": "https://images.unsplash.com/photo-1656314938753-04e10ebcbbc4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwzfHxzcmklMjBsYW5rYSUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85" },
+      { "title": "Tea Plantations", "url": "https://images.unsplash.com/photo-1656314943432-b00ec3f6dbce?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHw0fHxzcmklMjBsYW5rYSUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85" },
+      { "title": "Blue Train", "url": "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxzcmklMjBsYW5rYSUyMHRyYWlufGVufDB8fHx8MTc3NjQ4NDAwM3ww&ixlib=rb-4.1.0&q=85" },
+      { "title": "Ancient Stupas", "url": "https://images.unsplash.com/photo-1663471984093-5925e87e72d5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwxfHxzcmklMjBsYW5rYSUyMGN1bHR1cmV8ZW58MHx8fHwxNzc2NDgzOTk2fDA&ixlib=rb-4.1.0&q=85" },
+      { "title": "Beach Sunsets", "url": "https://images.unsplash.com/photo-1653959699604-1eb000740b57?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMGJlYWNofGVufDB8fHx8MTc3NjQ4NDAwM3ww&ixlib=rb-4.1.0&q=85" },
+      { "title": "Wildlife Safari", "url": "https://images.unsplash.com/photo-1719807633728-7ff13f7f2b61?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwxfHxzcmklMjBsYW5rYSUyMGVsZXBoYW50fGVufDB8fHx8MTc3NjQ4Mzk5Nnww&ixlib=rb-4.1.0&q=85" },
+      { "title": "Local Markets", "url": "https://images.unsplash.com/photo-1561827978-45f07fa822fe?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMGN1bHR1cmV8ZW58MHx8fHwxNzc2NDgzOTk2fDA&ixlib=rb-4.1.0&q=85" }
+    ],
+    "team": [
+      {
+        "role": "Founder & Guide",
+        "url": "https://images.unsplash.com/photo-1762709412743-3395ed866302?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwyfHxzb3V0aCUyMGFzaWFuJTIwbWFuJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzc2NDg0MDAzfDA&ixlib=rb-4.1.0&q=85"
+      },
+      {
+        "role": "Experience Curator",
+        "url": "https://images.unsplash.com/photo-1751660769801-43c0b1161c85?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85"
+      }
+    ],
+    "blog": [
+      { "url": "https://images.unsplash.com/photo-1511529048424-b3adbbb2ef04?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHw0fHxzcmklMjBsYW5rYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85" },
+      { "url": "https://images.unsplash.com/photo-1730432997123-76a755eb8941?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMGVsZXBoYW50fGVufDB8fHx8MTc3NjQ4Mzk5Nnww&ixlib=rb-4.1.0&q=85" },
+      { "url": "https://images.unsplash.com/photo-1704797389166-c7dac99fc633?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHw0fHxzcmklMjBsYW5rYSUyMHRyYWlufGVufDB8fHx8MTc3NjQ4NDAwM3ww&ixlib=rb-4.1.0&q=85" }
+    ],
+    "reviews": [
+      { "url": "https://images.unsplash.com/photo-1546590365-157e6a8b1e23?crop=entropy&cs=srgb&fm=jpg" },
+      { "url": "https://images.unsplash.com/photo-1650423790857-8595340993e9?crop=entropy&cs=srgb&fm=jpg" },
+      { "url": "https://images.unsplash.com/photo-1609224871627-4f69e57d9380?crop=entropy&cs=srgb&fm=jpg" }
+    ]
+  },
+  "testing": {
+    "data_testid_rules": "All interactive elements, forms, and cards MUST include role-based data-testid attributes (e.g., 'hero-cta-primary', 'nav-whatsapp-btn', 'trip-builder-submit')."
+  }
+}
