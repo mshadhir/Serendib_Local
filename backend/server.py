@@ -116,6 +116,7 @@ class BookingCreate(BaseModel):
     guest_country: str = Field(min_length=1, max_length=60)
     special_requests: Optional[str] = Field(default=None, max_length=2000)
     origin_url: str = Field(min_length=1, max_length=500)
+    is_full_payment: bool = False
 
 
 class BookingCheckoutResponse(BaseModel):
@@ -480,12 +481,12 @@ async def bookings_create_checkout(payload: BookingCreate, request: Request):
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format (expected YYYY-MM-DD)")
     num_days = (d2 - d1).days
-    if num_days < 1:
-        raise HTTPException(status_code=400, detail="Departure must be after arrival")
+    if num_days < 0:
+        raise HTTPException(status_code=400, detail="Departure cannot be before arrival")
 
     # Recompute totals server-side — never trust the frontend
     total = round(float(payload.price_per_person) * int(payload.num_travellers), 2)
-    deposit = round(total * 0.10)
+    deposit = round(total) if payload.is_full_payment else round(total * 0.10)
     if deposit < 1:
         raise HTTPException(status_code=400, detail="Deposit is too small")
 
@@ -502,6 +503,7 @@ async def bookings_create_checkout(payload: BookingCreate, request: Request):
         "arrival_date": payload.arrival_date,
         "departure_date": payload.departure_date,
         "num_travellers": str(payload.num_travellers),
+        "is_full_payment": "1" if payload.is_full_payment else "0",
     }
 
     stripe = _stripe_client(request)
@@ -532,6 +534,7 @@ async def bookings_create_checkout(payload: BookingCreate, request: Request):
         "guest_whatsapp": payload.guest_whatsapp,
         "guest_country": payload.guest_country,
         "special_requests": payload.special_requests,
+        "is_full_payment": bool(payload.is_full_payment),
         "stripe_payment_id": None,
         "payment_status": "pending",
         "status": "pending",

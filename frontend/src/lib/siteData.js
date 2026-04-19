@@ -8,7 +8,7 @@ export const BRAND = {
   email: "hello@serendiblocal.com",
   whatsappNumber: RAW_WA,
   whatsappDisplay: RAW_WA,
-  location: "Colombo, Sri Lanka",
+  location: "Badulla, Sri Lanka",
 };
 
 export const WHATSAPP_LINK = (text) =>
@@ -61,39 +61,6 @@ export const WHY_US = {
     },
   ],
 };
-
-export const PACKAGES = [
-  {
-    label: "Most Popular",
-    title: "The Real Sri Lanka",
-    days: "10 days",
-    from: "USD 1,290",
-    blurb:
-      "The classic loop done the local way — Kandy, tea hills, Ella train, safari, southern beach.",
-    image:
-      "https://images.unsplash.com/photo-1574611122955-5baa61496637?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMHRyYWlufGVufDB8fHx8MTc3NjQ4NDAwM3ww&ixlib=rb-4.1.0&q=85",
-  },
-  {
-    label: "Most Unique",
-    title: "Hidden Lanka",
-    days: "12 days",
-    from: "USD 1,590",
-    blurb:
-      "Zero tourist buses. Jaffna, Mannar, Knuckles, village homestays and wildlife you haven't heard of.",
-    image:
-      "https://images.unsplash.com/photo-1534545872802-0579930815c2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwzfHxzcmklMjBsYW5rYSUyMGVsZXBoYW50fGVufDB8fHx8MTc3NjQ4Mzk5Nnww&ixlib=rb-4.1.0&q=85",
-  },
-  {
-    label: "Best for Couples",
-    title: "Slow & Savour",
-    days: "8 days",
-    from: "USD 1,180",
-    blurb:
-      "Boutique villas, sunset dinners on the sand, Ayurveda, hill-country hideaways. Pure romance.",
-    image:
-      "https://images.unsplash.com/photo-1653959747793-c7c3775665f0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxzcmklMjBsYW5rYSUyMGJlYWNofGVufDB8fHx8MTc3NjQ4NDAwM3ww&ixlib=rb-4.1.0&q=85",
-  },
-];
 
 export const EXPERIENCES = [
   {
@@ -149,15 +116,15 @@ export const EXPERIENCES = [
 export const TEAM = [
   {
     name: "Kasun Perera",
-    role: "Founder & Lead Guide",
-    bio: "Born in the hill country, 12 years guiding. Speaks Sinhala, Tamil, English, enough German to make you laugh. His aunty cooks the best crab curry on the south coast.",
+    role: "Co-founder · Lead Driver",
+    bio: "Grew up on a tea estate ten minutes outside Badulla. Learned to drive on the switchbacks to Ella before he could legally vote. Speaks Sinhala, Tamil, English and enough German to make his guests laugh. Knows every petrol shed, parippu spot and shortcut between Colombo and the east coast.",
     image:
       "https://images.unsplash.com/photo-1762709412743-3395ed866302?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwyfHxzb3V0aCUyMGFzaWFuJTIwbWFuJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzc2NDg0MDAzfDA&ixlib=rb-4.1.0&q=85",
   },
   {
     name: "Tharushi Silva",
-    role: "Experience Curator",
-    bio: "Former food writer, turned slow-travel obsessive. Plans every itinerary with one question: would I take my mum here? If no — it's cut.",
+    role: "Co-founder · Trip Planner",
+    bio: "Kasun's neighbour since primary school in Badulla. Used to write for a Colombo food magazine, then quit to plan trips the way she plans her own: slow mornings, long lunches, no bus tours. Every route we offer she's driven herself — usually twice.",
     image:
       "https://images.unsplash.com/photo-1751660769801-43c0b1161c85?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85",
   },
