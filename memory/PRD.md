@@ -1,83 +1,114 @@
 # Serendib Local — Product Requirements
 
-## Original positioning (V6)
-Sri Lanka **private car & driver** service. No fixed packages, no group buses — a flexible chauffeur-driven product where travellers plan their own trip and ride with a vetted local driver who handles everything along the way.
+## Vision (V7 — launch-ready full-stack)
+Sri Lanka **private car & driver** booking site that doubles as its own CMS:
+no fixed packages, no group buses, and every piece of copy, price, route,
+review, FAQ or team bio is editable by the owners from `/admin`.
 
 ## Architecture
-- **Backend**: FastAPI + MongoDB + `emergentintegrations.payments.stripe.checkout` + Resend (dormant).
-- **Frontend**: React 19 + React Router v7 + Tailwind + Shadcn UI (Dialog, Accordion, Sonner) + Lucide icons.
-- Context: `CurrencyProvider` (USD/GBP/EUR, localStorage) + `LangProvider` (EN/DE/FR).
-- Fonts: Libre Baskerville (display) + Outfit (body).
-- Palette: sand, jungle green, clay accent.
+- **Backend**: FastAPI + MongoDB (`motor`) + `emergentintegrations` Stripe
+  checkout + Resend email (dormant). CMS lives in `cms` collection keyed by
+  collection name. Sitemap + robots served from `/api/sitemap.xml` and
+  `/api/robots.txt`.
+- **Frontend**: React 19 + React Router v7 + Tailwind + Shadcn UI + Lucide
+  icons + `react-helmet-async` for SEO. Three global providers wrap the
+  tree: `HelmetProvider` → `ContentProvider` → `LangProvider` → `CurrencyProvider`.
+- **Deploy target**: portable. Frontend → Vercel / Netlify, backend →
+  Railway / Render. All URLs & creds from `.env`; default values omitted.
+- **Routes**: `/`, `/admin`, `/booking-confirmed`, `/privacy`, `/terms`,
+  fallback `*` → `NotFound`.
 
-## User personas
-- Solo/couple flying into CMB, wanting a private car and flexible plan.
-- Families wanting an all-handled road trip with airport pickup.
-- Digital nomads / short-stay travellers who want airport transfer + day tours only.
+## CMS
+14 editable collections (backend `cms_defaults.py`, frontend
+`CmsEditor.jsx` with generic list / singleton schema driver):
 
-## Core flow
-Navbar → Hero ("Your Private Driver. Your Sri Lanka.") → TrustBar → **Services (3 cards: Airport $35 / Day Tour $85-day / Fully Handled Road Trip $150-day w/ Book Now)** → HowItWorks (4 steps) → Vehicles & pricing (Sedan/SUV/Van) → Instant Price widget → Concierge (6 cards) → Sample Routes (3) → Experiences → Team ("Two friends from Badulla") → Reviews → Why Book Direct → Trip Builder → FAQ → Instagram → Footer.
+| Key | Type | Purpose |
+| --- | --- | --- |
+| `settings` | singleton | brand, contact, WhatsApp, hero (eyebrow/title/sub/image), SEO (title, description, keywords, og image), site_url, Plausible domain, Instagram handle |
+| `services` | list | 3 home cards (Airport / Day Tour / Road Trip) — title, desc, price, icon, cta, mode, badge |
+| `vehicles` | list | Sedan / SUV / Van — label, seats, dailyUSD, icon, image |
+| `locations` | list | 19 trip-builder stops grouped by region |
+| `trip_experiences` | list | 14 add-ons on trip-builder step 3 |
+| `stay_budgets` | list | Budget / Mid / Upscale / Luxury bands |
+| `stay_styles` | list | Homestay, Guesthouse, Boutique, Villa, Eco-lodge, Beach cabana, Tea bungalow, Resort |
+| `reviews` | list | Homepage testimonials |
+| `faqs` | list | Accordion Q&A |
+| `concierge` | list | 6 add-on service cards |
+| `sample_routes` | list | 3 showcase itineraries |
+| `team` | list | Founders (bio, role, image) |
+| `experiences` | list | Instagram-style gallery tiles |
+| `trust_items` | list | Badges in the trust bar |
 
-Routes live: `/`, `/admin`, `/booking-confirmed`.
-Routes removed: `/packages/:slug`, `/deposit/:slug`, `/car-and-driver` (content merged into home).
+### CMS endpoints
+- `GET /api/cms` — all keys in one payload (frontend boot fetch).
+- `GET /api/cms/{key}` — single collection/singleton, `{key, value}`.
+- `PUT /api/admin/cms/{key}` — body `{items}` for list, `{data}` for
+  singleton. Bearer admin token. 401 / 404 / 422 enforced.
+- `POST /api/admin/cms/{key}/reset` — restore shipped defaults.
+- Auth uses `hmac.compare_digest` against `ADMIN_TOKEN`.
 
-## Booking flows
-- **Airport Transfer** — `QuickBookModal` (mode=`airport`), 2-step, **full payment upfront** (`is_full_payment: true`, deposit_amount == total_price). Stripe Checkout redirect.
-- **Day Tour** — `QuickBookModal` (mode=`dayTour`), 2-step, **10% deposit** (round(total * 0.1)). Stripe Checkout redirect.
-- **Fully Handled Road Trip** — `BookNowModal` (3-step), 10% deposit. Stripe Checkout redirect.
+## Bookings flows (unchanged from V6)
+- Airport Transfer — `QuickBookModal` mode=airport — full payment upfront.
+- Day Tour — `QuickBookModal` mode=dayTour — 10% deposit.
+- Road Trip — `BookNowModal` 3-step — 10% deposit.
+- Trip Builder — 5-step wizard (Trip basics → Stops → Experiences → Stay → Details) writes to `trip_inquiries`.
 
-## Backend endpoints
-- Public: `POST /api/trip-inquiries`, `POST /api/bookings/create-checkout`, `GET /api/bookings/status/{session_id}`, `POST /api/webhook/stripe`, legacy `POST /api/payments/checkout` + `GET /api/payments/status/{id}`.
-- Admin (Bearer `ADMIN_TOKEN`): `POST /api/admin/login`, `GET /api/admin/leads`, `GET /api/admin/bookings` (payment_status=paid only), `PATCH /api/admin/bookings/{id}`.
+## SEO / launch-ready
+- `<SEO>` React component (Helmet) on every route: title, description,
+  keywords, canonical, OpenGraph, Twitter, and JSON-LD `TravelAgency`
+  structured data. Admin + 404 use `noindex,nofollow`.
+- `GET /api/sitemap.xml` — generated from CMS (home + anchors + privacy,
+  terms + dynamic sample_route slugs).
+- `GET /api/robots.txt` + static `/public/robots.txt` fallback.
+- Privacy, Terms and NotFound pages live with CMS-driven contact info.
 
-## Bookings data model (MongoDB `bookings`)
-`booking_id, session_id, package_slug, package_name, arrival_date, departure_date, num_days, num_travellers, price_per_person, total_price, deposit_amount, is_full_payment, balance_due, guest_name, guest_email, guest_whatsapp, guest_country, special_requests, stripe_payment_id, payment_status, status (pending|deposit_paid|trip_confirmed|in_progress|completed|cancelled), emails_sent, created_at, updated_at`.
+## Admin dashboard
+Three top-level tabs — **Leads** · **Bookings** · **Content**.
+Content tab renders `CmsEditor` with 14 sub-tabs. Each tab edits either a
+list (add / delete / reorder / per-field inputs) or singleton (key-value
+form). Save & Reset call the appropriate endpoint.
 
 ## Implementation log
-### V1 – V5 (see git log)
-- Hero/TrustBar/WhyUs/Packages/Experiences/Team/Reviews/TripBuilder/Blog/Footer.
-- Stripe deposit page + admin dashboard + EN/DE/FR + Instagram embed + Car & Driver dedicated page with Instant Price widget.
+### V1 – V6.2 — see CHANGELOG in git history
+### V7 — 2026-02-19 (CMS + SEO migration)
+- New `/app/backend/cms_defaults.py` (14 default collections).
+- New CMS endpoints, startup seeder (idempotent), sitemap.xml, robots.txt.
+- New `ContentContext`, `useCMS`, `useSettings` hook.
+- New `SEO` component + meta upgrades in `public/index.html`.
+- New `CmsEditor` component with 14 schema-driven tabs.
+- Swapped Hero, Services, Reviews, FAQ, TripBuilder (locations,
+  trip_experiences, stay_budgets, stay_styles, vehicles) to CMS.
+- New pages: Privacy, Terms, 404.
+- Admin: 3rd tab "Content", SEO `noindex`.
+- Hardening: `hmac.compare_digest` on admin, StrictMode-safe fetch,
+  sort-by-order fallback when item[0] lacks `order`.
 
-### V6 — 2026-02 (Redesign: focus on Car & Driver)
-- Removed: Packages section, Custom Plan card, Blog, WhyUs, `/packages/:slug`, `/deposit/:slug`, `/car-and-driver` dedicated page.
-- New section components: `HowItWorks`, `Vehicles`, `Concierge`, `SampleRoutes`, `InstantPriceBlock`.
-- Services grid now the primary offer (Airport / Day Tour / Road Trip).
-- Booking emails (admin + guest) fire on first "paid" transition via Resend (dormant until `RESEND_API_KEY` set).
-- Admin dashboard: Leads + Bookings tabs with status dropdown.
-- Simplified nav: Services · Vehicles · Routes · Reviews · FAQ (+ EN/DE/FR translations).
-
-### V6.1 — 2026-02-19
-- **New `QuickBookModal.jsx`**: 2-step Stripe booking for Airport Transfer (full payment) and Day Tour (10% deposit). Service cards route accordingly via `cta: "quickbook"` flag in Services.jsx.
-- **Backend `is_full_payment` branch** in `/api/bookings/create-checkout`: when true → deposit_amount = total_price; when false → round(total * 0.1). Deposit is re-computed server-side for safety.
-- **Team section redesign (V6.1a)**: Narrative-only "Friends from Badulla" origin story (no names, no photos, no personal details) + THE BASICS sidebar (hill-country origin, 3+ years experience, whole-island coverage). BRAND.location updated to "Badulla, Sri Lanka".
-- **Dead code removed**: `Packages.jsx`, `PackageFilters.jsx`, `WhyUs.jsx`, `Blog.jsx`, `CarAndDriver.jsx`, `pages/Deposit.jsx`, `pages/PackageDetail.jsx`, `pages/CarAndDriverPage.jsx`; `packages.js` stripped to `CURRENCIES` + `ROAD_TRIP_PACKAGE`; obsolete `PACKAGES` + `BLOG` arrays removed from `siteData.js`.
-
-### V6.2 — 2026-02-19 (Trip Builder redesigned for car & driver concept)
-- **`TripBuilder.jsx` rewritten** as a 5-step wizard: (1) Trip basics — days (presets 5/7/10/14 + stepper), travellers stepper, travel month, vehicle selector (Sedan/SUV/Van with daily rates); (2) Pick stops — 19 locations grouped by region (Capital / West Coast / Cultural Triangle / Hill Country / South Coast / East Coast / North) with emoji + note cards; (3) Experiences — 14 optional add-ons (rice & curry, safari, blue train, cooking class, surf lesson, etc.) + reassurance callout ("we'll shortlist options to match your budget"); (4) **Stay / Accommodation** — Yes/No toggle ("help me find stays" vs "I'll book my own"), budget band (Budget $25-60 / Mid $60-120 / Upscale $120-250 / Luxury $250+), 8 style chips (homestay, guesthouse, boutique, villa, eco-lodge, beach cabana, tea bungalow, resort), free-text notes, "how this works" callout explaining shortlist-with-no-markup flow; (5) Your details — name/email/notes. Sticky live-summary sidebar shows days, travellers, vehicle, stops, experiences, **accommodation budget + style chips**, and estimated driver cost = days × daily rate.
-- **`TripInquiry` model extended** with `locations: List[str]`, `vehicle`, `travellers`, `travel_month`, `accommodation_help: bool`, `accommodation_budget: str`, `accommodation_styles: List[str]`, `accommodation_notes: str`. Backend persists and returns all new fields (no `_id` leak).
-- **`Admin.jsx` leads table** now has columns: Name · Email · Days · Pax · Vehicle · Stops · Experiences · **Stay** · When · Received. CSV export includes stay help / budget / styles. Search filters on locations, vehicle, travel_month.
-- **`siteData.js`**: added `TRIP_LOCATIONS` (19 stops) and `TRIP_EXPERIENCES` (14 items) exports.
-
-## Testing
-- iteration_1 → iteration_6: all green.
-- iteration_6 (2026-02-19): 14/14 backend pytest, full frontend e2e for QuickBookModal (airport + day-tour Stripe redirects both verified), BookNowModal road-trip flow, Team section copy, admin login, i18n switch, regression on iteration_5 flows.
-- Test credentials: `/app/memory/test_credentials.md`.
+### Verified (iteration_8)
+- 17/17 backend pytest: CMS CRUD, 401/404/422, reset, sitemap, robots.
+- Frontend e2e: CMS editor renders 14 tabs, singleton form shows real
+  values, save/reset round-trip, new routes (/privacy, /terms, 404).
+- Regression: QuickBookModal, BookNowModal, TripBuilder wizard, admin
+  leads/bookings still intact.
 
 ## Prioritised backlog
-### P1
-- Paste real `RESEND_API_KEY` → emails go live (admin + guest).
-- Verify `serendiblocal.com` DNS in Resend.
-- Swap placeholder daily rates / WhatsApp number / team photos (Kasun + Tharushi real portraits).
-- Switch `STRIPE_API_KEY` to real live key before launch.
+### P1 (before publish)
+- Paste keys (Stripe LIVE, Resend, WhatsApp real number) into `.env`.
+- Real team portraits + brand logo.
+- Social media OG asset (1200×630).
+- Test Stripe LIVE with a small transaction.
 
-### P2
-- Admin dashboard: show "pending" bookings tab too (not just `payment_status=paid`), date-range filter, lead → booking link, notes field.
-- Send balance-due reminder email 45 days before arrival.
-- Self-serve balance payment (90%) flow for Day Tour / Road Trip deposits.
-
-### P3
-- Availability calendar for drivers/vehicles.
+### P2 (nice-to-have post-launch)
+- Per-key Pydantic schemas for CMS PUT (prevents malformed items).
+- Split `server.py` (>800 LOC) into `routers/{cms,bookings,payments,seo}.py`.
+- Admin CMS: image upload flow (currently URL fields only).
+- Admin CMS: drag-and-drop reordering.
+- Admin CMS: preview-before-save.
+- Availability calendar for driver/vehicle.
+- Email balance-due reminder 45 days before arrival + self-serve 90% flow.
 - Google Reviews live badge.
-- CMS for routes/concierge content.
-- Normalise `qb-dayTour-*` test-ids to kebab-case (`qb-day-tour-*`) for consistency.
-- Use `pax` stepper in QuickBookModal for dynamic per-passenger pricing (currently logged only in special_requests).
+
+### P3 (optional)
+- Rate-limit admin endpoints.
+- Newsletter capture + Mailchimp/Resend list.
+- Plausible analytics auto-inject from settings.
+- Emergent Google-Auth for admin login.

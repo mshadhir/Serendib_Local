@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 // CMS defaults mirrored so the UI renders even before `/api/cms` resolves.
@@ -49,6 +49,7 @@ const ContentCtx = createContext({ content: FALLBACK, loading: true, reload: () 
 export function ContentProvider({ children }) {
   const [content, setContent] = useState(FALLBACK);
   const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
   const reload = async () => {
     try {
@@ -65,6 +66,9 @@ export function ContentProvider({ children }) {
   };
 
   useEffect(() => {
+    // Guard against StrictMode double-invoke in dev.
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

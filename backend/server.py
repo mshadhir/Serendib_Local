@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import asyncio
+import hmac
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
@@ -286,7 +287,9 @@ def verify_admin(authorization: str = Header(default=None)):
     expected = os.environ.get('ADMIN_TOKEN')
     if not expected:
         raise HTTPException(status_code=500, detail="Admin token not configured")
-    if not authorization or authorization != f"Bearer {expected}":
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    if not hmac.compare_digest(authorization.removeprefix("Bearer ").strip(), expected):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return True
 
@@ -349,7 +352,7 @@ async def list_trip_inquiries(limit: int = 100):
 @api_router.post("/admin/login")
 async def admin_login(payload: AdminLoginPayload):
     expected = os.environ.get('ADMIN_TOKEN')
-    if not expected or payload.password != expected:
+    if not expected or not hmac.compare_digest(payload.password, expected):
         raise HTTPException(status_code=401, detail="Invalid password")
     return {"token": expected}
 
@@ -683,15 +686,14 @@ async def _cms_fetch(key: str) -> Any:
 @api_router.get("/cms")
 async def cms_public_all():
     """Return every published CMS collection + settings in one request."""
-    await seed_cms_defaults()
     docs = db.cms.find({})
     out: Dict[str, Any] = {}
     async for doc in docs:
         key = doc["_id"]
         if key in LIST_COLLECTIONS:
             items = doc.get("items", [])
-            if isinstance(items, list) and items and isinstance(items[0], dict) and "order" in items[0]:
-                items = sorted(items, key=lambda x: x.get("order", 999))
+            if isinstance(items, list) and any(isinstance(it, dict) and "order" in it for it in items):
+                items = sorted(items, key=lambda x: x.get("order", 999) if isinstance(x, dict) else 999)
             out[key] = items
         else:
             out[key] = doc.get("data", {})
