@@ -49,8 +49,14 @@ Routes removed: `/packages/:slug`, `/deposit/:slug`, `/car-and-driver` (content 
 ### V6.1 — 2026-02-19
 - **New `QuickBookModal.jsx`**: 2-step Stripe booking for Airport Transfer (full payment) and Day Tour (10% deposit). Service cards route accordingly via `cta: "quickbook"` flag in Services.jsx.
 - **Backend `is_full_payment` branch** in `/api/bookings/create-checkout`: when true → deposit_amount = total_price; when false → round(total * 0.1). Deposit is re-computed server-side for safety.
-- **Team section redesign**: "Two friends from Badulla" narrative — 4-paragraph origin story (childhood friends from Uva province, 3+ years professionally driving), THE BASICS sidebar (hill-country origin, experience, Sri Lanka coverage), refreshed Kasun + Tharushi bios. BRAND.location updated to "Badulla, Sri Lanka".
-- **Dead code removed**: `Packages.jsx`, `PackageFilters.jsx`, `WhyUs.jsx`, `Blog.jsx`, `CarAndDriver.jsx`, `pages/Deposit.jsx`, `pages/PackageDetail.jsx`, `pages/CarAndDriverPage.jsx`. `packages.js` stripped to `CURRENCIES` + `ROAD_TRIP_PACKAGE` only. `siteData.js` lost obsolete `PACKAGES` array.
+- **Team section redesign (V6.1a)**: Narrative-only "Friends from Badulla" origin story (no names, no photos, no personal details) + THE BASICS sidebar (hill-country origin, 3+ years experience, whole-island coverage). BRAND.location updated to "Badulla, Sri Lanka".
+- **Dead code removed**: `Packages.jsx`, `PackageFilters.jsx`, `WhyUs.jsx`, `Blog.jsx`, `CarAndDriver.jsx`, `pages/Deposit.jsx`, `pages/PackageDetail.jsx`, `pages/CarAndDriverPage.jsx`; `packages.js` stripped to `CURRENCIES` + `ROAD_TRIP_PACKAGE`; obsolete `PACKAGES` + `BLOG` arrays removed from `siteData.js`.
+
+### V6.2 — 2026-02-19 (Trip Builder redesigned for car & driver concept)
+- **`TripBuilder.jsx` rewritten** as a 4-step wizard: (1) Trip basics — days (presets 5/7/10/14 + stepper), travellers stepper, travel month, vehicle selector (Sedan/SUV/Van with daily rates); (2) Pick stops — 19 locations grouped by region (Capital / West Coast / Cultural Triangle / Hill Country / South Coast / East Coast / North) with emoji + note cards; (3) Experiences — 14 optional add-ons (rice & curry, safari, blue train, cooking class, surf lesson, etc.); (4) Your details — name/email/notes. Sticky live-summary sidebar shows days, travellers, vehicle, picked stops, experiences, and **estimated driver cost** = days × daily rate.
+- **`TripInquiry` model extended** with `locations: List[str]`, `vehicle: Optional[str]`, `travellers: Optional[int]`, `travel_month: Optional[str]`. Backend persists and returns all new fields (no `_id` leak).
+- **`Admin.jsx` leads table updated** to columns: Name · Email · Days · Pax · Vehicle · Stops · Experiences · When · Received. CSV export and search now include the new fields.
+- **`siteData.js`**: added `TRIP_LOCATIONS` (19 stops) and `TRIP_EXPERIENCES` (14 items) exports.
 
 ## Testing
 - iteration_1 → iteration_6: all green.

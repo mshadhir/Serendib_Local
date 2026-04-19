@@ -124,11 +124,6 @@ export default function TripBuilder() {
     }
   };
 
-  const canContinueFromStep = (n) => {
-    if (n === 2) return locations.length >= 1;
-    return true;
-  };
-
   return (
     <section
       id="trip-builder"
@@ -493,7 +488,6 @@ export default function TripBuilder() {
               {step < 4 ? (
                 <button
                   type="button"
-                  disabled={!canContinueFromStep(step + 1) && step === 1}
                   onClick={() => {
                     if (step === 2 && locations.length === 0) {
                       toast.error("Pick at least one stop.");
@@ -502,7 +496,7 @@ export default function TripBuilder() {
                     setStep((n) => Math.min(4, n + 1));
                   }}
                   data-testid="tb-continue"
-                  className="inline-flex items-center gap-2 rounded-full bg-jungle-700 hover:bg-jungle-800 disabled:opacity-50 text-sand-50 px-6 py-3 text-sm font-medium transition-all"
+                  className="inline-flex items-center gap-2 rounded-full bg-jungle-700 hover:bg-jungle-800 text-sand-50 px-6 py-3 text-sm font-medium transition-all"
                 >
                   Continue <ArrowRight className="h-4 w-4" />
                 </button>
