@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Header, Depends
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -94,6 +94,39 @@ async def create_trip_inquiry(payload: TripInquiryCreate):
 async def list_trip_inquiries(limit: int = 100):
     if limit < 1 or limit > 500:
         raise HTTPException(status_code=400, detail="limit must be between 1 and 500")
+    rows = await db.trip_inquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    for r in rows:
+        if isinstance(r.get('created_at'), str):
+            r['created_at'] = datetime.fromisoformat(r['created_at'])
+    return rows
+
+
+# ----- Admin -----
+class AdminLoginPayload(BaseModel):
+    password: str = Field(min_length=1, max_length=200)
+
+
+def verify_admin(authorization: str = Header(default=None)):
+    expected = os.environ.get('ADMIN_TOKEN')
+    if not expected:
+        raise HTTPException(status_code=500, detail="Admin token not configured")
+    if not authorization or authorization != f"Bearer {expected}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return True
+
+
+@api_router.post("/admin/login")
+async def admin_login(payload: AdminLoginPayload):
+    expected = os.environ.get('ADMIN_TOKEN')
+    if not expected or payload.password != expected:
+        raise HTTPException(status_code=401, detail="Invalid password")
+    return {"token": expected}
+
+
+@api_router.get("/admin/leads", response_model=List[TripInquiry])
+async def admin_list_leads(limit: int = 500, _: bool = Depends(verify_admin)):
+    if limit < 1 or limit > 2000:
+        raise HTTPException(status_code=400, detail="limit must be between 1 and 2000")
     rows = await db.trip_inquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(limit)
     for r in rows:
         if isinstance(r.get('created_at'), str):

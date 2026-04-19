@@ -3,20 +3,19 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Check, Send, MessageCircle } from "lucide-react";
 import { INTERESTS, WHATSAPP_LINK } from "@/lib/siteData";
+import { useLang } from "@/context/LangContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 export default function TripBuilder() {
+  const { t } = useLang();
   const [form, setForm] = useState({ name: "", email: "", days: "10", message: "" });
   const [interests, setInterests] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
-  const toggleInterest = (tag) => {
-    setInterests((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
+  const toggleInterest = (tag) =>
+    setInterests((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]));
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -36,7 +35,7 @@ export default function TripBuilder() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim()) {
-      toast.error("Please fill in your name and email.");
+      toast.error(t("builder.errorRequired"));
       return;
     }
     setSubmitting(true);
@@ -48,14 +47,12 @@ export default function TripBuilder() {
         interests,
         message: form.message || null,
       });
-      toast.success("Got it! We'll reply within 2 hours.", {
-        description: "Opening WhatsApp so we can chat faster…",
-      });
+      toast.success(t("builder.success"), { description: t("builder.successDesc") });
       window.open(WHATSAPP_LINK(buildWhatsappMessage()), "_blank", "noopener,noreferrer");
       setForm({ name: "", email: "", days: "10", message: "" });
       setInterests([]);
     } catch (err) {
-      toast.error("Something went wrong. Try WhatsApp instead?", {
+      toast.error(t("builder.error"), {
         description: err?.response?.data?.detail?.[0]?.msg || err?.message,
       });
     } finally {
@@ -78,39 +75,33 @@ export default function TripBuilder() {
       <div className="relative max-w-6xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-14">
         <div className="lg:col-span-5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-clay-500 mb-4 reveal">
-            Build your own trip
+            {t("builder.eyebrow")}
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.02] tracking-tight reveal">
-            Tell us your dream trip.
-            <span className="block italic text-sand-50/70">We'll make it happen.</span>
+            {t("builder.title")}
+            <span className="block italic text-sand-50/70">{t("builder.titleItalic")}</span>
           </h2>
           <p className="mt-6 text-sand-50/75 text-base md:text-lg max-w-md reveal">
-            Pick what excites you. Takes 40 seconds. We reply within 2 hours on WhatsApp — no pushy
-            sales calls, ever.
+            {t("builder.sub")}
           </p>
 
           <ul className="mt-10 space-y-3 text-sand-50/80 text-sm reveal">
-            {[
-              "No booking fees until you approve the itinerary",
-              "Free changes up to 14 days before you fly",
-              "Real humans on WhatsApp, 7 days a week",
-            ].map((b) => (
-              <li key={b} className="flex items-start gap-3">
+            {["builder.bullet1", "builder.bullet2", "builder.bullet3"].map((k) => (
+              <li key={k} className="flex items-start gap-3">
                 <Check className="h-4 w-4 text-clay-500 mt-0.5 flex-none" />
-                {b}
+                {t(k)}
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Form card */}
         <form
           onSubmit={handleSubmit}
           data-testid="trip-builder-form"
           className="lg:col-span-7 bg-sand-50 text-[#111827] rounded-2xl p-7 md:p-10 reveal"
         >
           <label className="text-[11px] font-semibold uppercase tracking-[0.24em] text-clay-500">
-            What excites you?
+            {t("builder.interests")}
           </label>
           <div className="mt-4 flex flex-wrap gap-2.5" data-testid="interest-pills">
             {INTERESTS.map((tag) => {
@@ -135,7 +126,7 @@ export default function TripBuilder() {
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs text-[#4B5563] mb-2">Your name</label>
+              <label className="block text-xs text-[#4B5563] mb-2">{t("builder.name")}</label>
               <input
                 required
                 name="name"
@@ -147,7 +138,7 @@ export default function TripBuilder() {
               />
             </div>
             <div>
-              <label className="block text-xs text-[#4B5563] mb-2">Email</label>
+              <label className="block text-xs text-[#4B5563] mb-2">{t("builder.email")}</label>
               <input
                 required
                 type="email"
@@ -160,7 +151,7 @@ export default function TripBuilder() {
               />
             </div>
             <div>
-              <label className="block text-xs text-[#4B5563] mb-2">How many days?</label>
+              <label className="block text-xs text-[#4B5563] mb-2">{t("builder.days")}</label>
               <input
                 required
                 type="number"
@@ -174,12 +165,12 @@ export default function TripBuilder() {
               />
             </div>
             <div>
-              <label className="block text-xs text-[#4B5563] mb-2">When (approx)?</label>
+              <label className="block text-xs text-[#4B5563] mb-2">{t("builder.when")}</label>
               <input
                 name="message"
                 value={form.message}
                 onChange={handleChange}
-                placeholder="e.g. Nov 2026, flexible"
+                placeholder={t("builder.whenPlaceholder")}
                 data-testid="trip-form-when"
                 className="w-full rounded-lg bg-sand-50 border border-sand-200 focus:border-jungle-700 outline-none px-4 py-3"
               />
@@ -194,7 +185,7 @@ export default function TripBuilder() {
               className="inline-flex items-center justify-center gap-2 rounded-full bg-jungle-700 hover:bg-jungle-800 disabled:opacity-60 text-sand-50 px-7 py-4 text-sm font-medium transition-all"
             >
               <Send className="h-4 w-4" />
-              {submitting ? "Sending…" : "Send my preferences"}
+              {submitting ? t("builder.submitting") : t("builder.submit")}
             </button>
             <a
               href={WHATSAPP_LINK(buildWhatsappMessage())}
@@ -203,7 +194,7 @@ export default function TripBuilder() {
               data-testid="trip-form-whatsapp"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-jungle-700 text-jungle-700 hover:bg-jungle-700 hover:text-sand-50 px-7 py-4 text-sm font-medium transition-all"
             >
-              <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
+              <MessageCircle className="h-4 w-4" /> {t("builder.chat")}
             </a>
           </div>
         </form>

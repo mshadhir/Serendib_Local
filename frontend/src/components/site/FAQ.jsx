@@ -1,4 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useLang } from "@/context/LangContext";
 
 const FAQS = [
   {
@@ -28,6 +29,7 @@ const FAQS = [
 ];
 
 export default function FAQ() {
+  const { t } = useLang();
   return (
     <section
       id="faq"
@@ -37,10 +39,10 @@ export default function FAQ() {
       <div className="max-w-5xl mx-auto px-6 md:px-12">
         <div className="text-center mb-14">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-clay-500 mb-4 reveal">
-            Your questions
+            {t("faq.eyebrow")}
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.02] tracking-tight reveal">
-            Before you book, the honest answers.
+            {t("faq.title")}
           </h2>
         </div>
 
@@ -64,9 +66,9 @@ export default function FAQ() {
         </Accordion>
 
         <div className="mt-12 text-center text-[#4B5563] reveal">
-          Still something on your mind?{" "}
+          {t("faq.stillQuestion")}{" "}
           <a href="#trip-builder" className="text-jungle-700 underline underline-offset-4 hover:text-clay-500">
-            just ask us on WhatsApp →
+            {t("faq.askWhatsapp")}
           </a>
         </div>
       </div>

@@ -1,14 +1,15 @@
 import { ArrowRight, Play } from "lucide-react";
 import { HERO, WHATSAPP_LINK } from "@/lib/siteData";
+import { useLang } from "@/context/LangContext";
 
 export default function Hero() {
+  const { t } = useLang();
   return (
     <section
       id="top"
       data-testid="hero-section"
       className="relative min-h-[100svh] w-full overflow-hidden bg-jungle-900"
     >
-      {/* Image layer with slow Ken Burns */}
       <div className="absolute inset-0 overflow-hidden">
         <img
           src={HERO.image}
@@ -19,13 +20,12 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/70" />
       </div>
 
-      {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-40 pb-28 min-h-[100svh] flex flex-col justify-end">
         <p
           data-testid="hero-eyebrow"
           className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.28em] text-clay-500 mb-6"
         >
-          {HERO.eyebrow}
+          {t("hero.eyebrow")}
         </p>
         <h1
           data-testid="hero-title"
@@ -37,7 +37,7 @@ export default function Hero() {
           data-testid="hero-sub"
           className="mt-7 max-w-2xl text-white/85 text-base md:text-lg leading-relaxed"
         >
-          {HERO.sub}
+          {t("hero.sub")}
         </p>
 
         <div className="mt-10 flex flex-wrap gap-4">
@@ -46,7 +46,7 @@ export default function Hero() {
             data-testid="hero-cta-packages"
             className="group inline-flex items-center gap-2 rounded-full bg-clay-500 hover:bg-clay-600 text-white px-7 py-4 text-sm font-medium transition-all"
           >
-            See our journeys
+            {t("hero.ctaPackages")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </a>
           <a
@@ -55,7 +55,7 @@ export default function Hero() {
             className="inline-flex items-center gap-2 rounded-full border border-white/30 hover:border-white/80 text-white/95 px-7 py-4 text-sm font-medium backdrop-blur-sm transition-all"
           >
             <Play className="h-4 w-4" />
-            Build my trip
+            {t("hero.ctaBuilder")}
           </a>
           <a
             href={WHATSAPP_LINK()}
@@ -64,14 +64,14 @@ export default function Hero() {
             data-testid="hero-cta-whatsapp"
             className="inline-flex items-center text-white/70 hover:text-white text-sm underline underline-offset-4 px-2 py-4"
           >
-            or just say hi on WhatsApp →
+            {t("hero.ctaWhatsapp")}
           </a>
         </div>
 
         <div className="mt-14 hidden md:flex items-center gap-8 text-white/70 text-xs tracking-widest uppercase">
-          <span>Scroll</span>
+          <span>{t("hero.scroll")}</span>
           <span className="h-px w-20 bg-white/40" />
-          <span>to explore</span>
+          <span>{t("hero.explore")}</span>
         </div>
       </div>
     </section>

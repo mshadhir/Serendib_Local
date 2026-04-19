@@ -1,7 +1,9 @@
 import { MessageCircle } from "lucide-react";
 import { WHATSAPP_LINK } from "@/lib/siteData";
+import { useLang } from "@/context/LangContext";
 
 export default function FloatingWhatsapp() {
+  const { t } = useLang();
   return (
     <a
       href={WHATSAPP_LINK()}
@@ -16,7 +18,7 @@ export default function FloatingWhatsapp() {
         <MessageCircle className="h-6 w-6 md:h-7 md:w-7" />
       </span>
       <span className="hidden md:inline-flex absolute right-20 top-1/2 -translate-y-1/2 whitespace-nowrap bg-jungle-900 text-sand-50 text-xs font-medium px-3 py-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-        Chat with a local · 24/7
+        {t("wa.floating")}
       </span>
     </a>
   );
