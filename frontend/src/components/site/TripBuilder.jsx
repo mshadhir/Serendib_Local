@@ -10,16 +10,18 @@ import {
   TRIP_LOCATIONS, TRIP_EXPERIENCES, WHATSAPP_LINK,
 } from "@/lib/siteData";
 import { useLang } from "@/context/LangContext";
+import { useCMS } from "@/context/ContentContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Vehicle options match Vehicles section daily pricing.
-const VEHICLES = [
-  { id: "sedan", label: "Sedan",      seats: "1–3 pax", dailyUSD: 85,  icon: Car },
-  { id: "suv",   label: "SUV",        seats: "1–5 pax", dailyUSD: 110, icon: Truck },
-  { id: "van",   label: "Family Van", seats: "1–8 pax", dailyUSD: 140, icon: Bus },
+// Vehicle option fallback (icons live in frontend only, prices from CMS).
+const VEHICLE_FALLBACK = [
+  { id: "sedan", label: "Sedan",      seats: "1–3 pax", dailyUSD: 85,  icon: "Car" },
+  { id: "suv",   label: "SUV",        seats: "1–5 pax", dailyUSD: 110, icon: "Truck" },
+  { id: "van",   label: "Family Van", seats: "1–8 pax", dailyUSD: 140, icon: "Bus" },
 ];
+const VEHICLE_ICONS = { Car, Truck, Bus };
 
 // Regions drive the location grid grouping.
 const REGIONS = [
@@ -37,15 +39,14 @@ const STEPS = [
 
 const DAY_PRESETS = [5, 7, 10, 14];
 
-// Accommodation budget bands — per room per night, in USD.
-const STAY_BUDGETS = [
+const STAY_BUDGETS_FALLBACK = [
   { id: "budget",  label: "Budget",        range: "$25–60",   note: "Homestays · family guesthouses" },
   { id: "mid",     label: "Mid-range",     range: "$60–120",  note: "Boutique guesthouses · 3★ hotels" },
   { id: "upscale", label: "Upscale",       range: "$120–250", note: "Boutique villas · 4★ hotels" },
   { id: "luxury",  label: "Luxury",        range: "$250+",    note: "5★ resorts · private villas" },
 ];
 
-const STAY_STYLES = [
+const STAY_STYLES_FALLBACK = [
   { id: "homestay",    label: "Homestay" },
   { id: "guesthouse",  label: "Guesthouse" },
   { id: "boutique",    label: "Boutique hotel" },
@@ -58,6 +59,20 @@ const STAY_STYLES = [
 
 export default function TripBuilder() {
   const { t } = useLang();
+
+  const cmsLocations = useCMS("locations");
+  const cmsTripExperiences = useCMS("trip_experiences");
+  const cmsStayBudgets = useCMS("stay_budgets");
+  const cmsStayStyles = useCMS("stay_styles");
+  const cmsVehicles = useCMS("vehicles");
+
+  const LOCATIONS = cmsLocations?.length ? cmsLocations : TRIP_LOCATIONS;
+  const EXPERIENCES_LIST = cmsTripExperiences?.length ? cmsTripExperiences : TRIP_EXPERIENCES;
+  const STAY_BUDGETS = cmsStayBudgets?.length ? cmsStayBudgets : STAY_BUDGETS_FALLBACK;
+  const STAY_STYLES = cmsStayStyles?.length ? cmsStayStyles : STAY_STYLES_FALLBACK;
+  const VEHICLES = (cmsVehicles?.length ? cmsVehicles : VEHICLE_FALLBACK).map((v) => ({
+    ...v, icon: VEHICLE_ICONS[v.icon] || Car,
+  }));
   const [step, setStep] = useState(1);
   const [days, setDays] = useState(10);
   const [travellers, setTravellers] = useState(2);
@@ -78,12 +93,12 @@ export default function TripBuilder() {
   const locationsByRegion = useMemo(() => {
     const grouped = {};
     for (const r of REGIONS) grouped[r] = [];
-    for (const loc of TRIP_LOCATIONS) {
+    for (const loc of LOCATIONS) {
       if (!grouped[loc.region]) grouped[loc.region] = [];
       grouped[loc.region].push(loc);
     }
     return grouped;
-  }, []);
+  }, [LOCATIONS]);
 
   const toggleLocation = (slug) =>
     setLocations((prev) => (prev.includes(slug) ? prev.filter((x) => x !== slug) : [...prev, slug]));
@@ -100,9 +115,9 @@ export default function TripBuilder() {
   };
 
   const locationNames = () =>
-    locations.map((s) => TRIP_LOCATIONS.find((l) => l.slug === s)?.name).filter(Boolean);
+    locations.map((s) => LOCATIONS.find((l) => l.slug === s)?.name).filter(Boolean);
   const experienceLabels = () =>
-    experiences.map((s) => TRIP_EXPERIENCES.find((e) => e.slug === s)?.label).filter(Boolean);
+    experiences.map((s) => EXPERIENCES_LIST.find((e) => e.slug === s)?.label).filter(Boolean);
   const stayStyleLabels = () =>
     stayStyles.map((s) => STAY_STYLES.find((x) => x.id === s)?.label).filter(Boolean);
   const stayBudgetObj = STAY_BUDGETS.find((b) => b.id === stayBudget) || STAY_BUDGETS[1];
@@ -435,7 +450,7 @@ export default function TripBuilder() {
                 </div>
 
                 <div className="flex flex-wrap gap-2.5" data-testid="tb-experiences">
-                  {TRIP_EXPERIENCES.map((exp) => {
+                  {EXPERIENCES_LIST.map((exp) => {
                     const active = experiences.includes(exp.slug);
                     return (
                       <button

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Header, Depends, Request
+from fastapi.responses import PlainTextResponse, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -7,7 +8,7 @@ import asyncio
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, date
 
@@ -16,6 +17,8 @@ from emergentintegrations.payments.stripe.checkout import (
     CheckoutSessionRequest,
 )
 import resend
+
+from cms_defaults import CMS_DEFAULTS, LIST_COLLECTIONS, SINGLETON_COLLECTIONS, ALL_KEYS
 
 
 ROOT_DIR = Path(__file__).parent
@@ -647,6 +650,151 @@ async def stripe_webhook(request: Request):
     return {"received": True}
 
 
+# ---------- CMS (content management) ----------
+async def seed_cms_defaults() -> None:
+    """On startup, for each key not yet in `cms` collection, insert defaults."""
+    existing = {doc["_id"] async for doc in db.cms.find({}, {"_id": 1})}
+    now = datetime.now(timezone.utc).isoformat()
+    for key, value in CMS_DEFAULTS.items():
+        if key in existing:
+            continue
+        if key in LIST_COLLECTIONS:
+            await db.cms.insert_one({"_id": key, "items": value, "updated_at": now})
+        else:
+            await db.cms.insert_one({"_id": key, "data": value, "updated_at": now})
+        logger.info("Seeded CMS key: %s", key)
+
+
+async def _cms_fetch(key: str) -> Any:
+    doc = await db.cms.find_one({"_id": key})
+    if not doc:
+        # lazy-seed in case a new key was added after first run
+        default = CMS_DEFAULTS.get(key)
+        if default is None:
+            return [] if key in LIST_COLLECTIONS else {}
+        payload = {"items": default} if key in LIST_COLLECTIONS else {"data": default}
+        payload["_id"] = key
+        payload["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.cms.insert_one(payload)
+        return default
+    return doc.get("items") if key in LIST_COLLECTIONS else doc.get("data", {})
+
+
+@api_router.get("/cms")
+async def cms_public_all():
+    """Return every published CMS collection + settings in one request."""
+    await seed_cms_defaults()
+    docs = db.cms.find({})
+    out: Dict[str, Any] = {}
+    async for doc in docs:
+        key = doc["_id"]
+        if key in LIST_COLLECTIONS:
+            items = doc.get("items", [])
+            if isinstance(items, list) and items and isinstance(items[0], dict) and "order" in items[0]:
+                items = sorted(items, key=lambda x: x.get("order", 999))
+            out[key] = items
+        else:
+            out[key] = doc.get("data", {})
+    return out
+
+
+@api_router.get("/cms/{key}")
+async def cms_public_one(key: str):
+    if key not in ALL_KEYS:
+        raise HTTPException(status_code=404, detail="Unknown CMS key")
+    return {"key": key, "value": await _cms_fetch(key)}
+
+
+class CmsUpdatePayload(BaseModel):
+    """Admins send either `items` (list collection) or `data` (singleton)."""
+    items: Optional[List[Any]] = None
+    data: Optional[Dict[str, Any]] = None
+
+
+@api_router.put("/admin/cms/{key}")
+async def cms_admin_put(key: str, payload: CmsUpdatePayload, _: bool = Depends(verify_admin)):
+    if key not in ALL_KEYS:
+        raise HTTPException(status_code=404, detail="Unknown CMS key")
+    now = datetime.now(timezone.utc).isoformat()
+    if key in LIST_COLLECTIONS:
+        if payload.items is None:
+            raise HTTPException(status_code=422, detail="`items` array required for this key")
+        await db.cms.update_one(
+            {"_id": key},
+            {"$set": {"items": payload.items, "updated_at": now}},
+            upsert=True,
+        )
+    else:
+        if payload.data is None:
+            raise HTTPException(status_code=422, detail="`data` object required for this key")
+        await db.cms.update_one(
+            {"_id": key},
+            {"$set": {"data": payload.data, "updated_at": now}},
+            upsert=True,
+        )
+    return {"ok": True, "key": key, "updated_at": now}
+
+
+@api_router.post("/admin/cms/{key}/reset")
+async def cms_admin_reset(key: str, _: bool = Depends(verify_admin)):
+    """Restore a CMS collection/singleton to its shipped defaults."""
+    if key not in ALL_KEYS or key not in CMS_DEFAULTS:
+        raise HTTPException(status_code=404, detail="Unknown CMS key")
+    now = datetime.now(timezone.utc).isoformat()
+    default = CMS_DEFAULTS[key]
+    if key in LIST_COLLECTIONS:
+        await db.cms.update_one({"_id": key}, {"$set": {"items": default, "updated_at": now}}, upsert=True)
+    else:
+        await db.cms.update_one({"_id": key}, {"$set": {"data": default, "updated_at": now}}, upsert=True)
+    return {"ok": True, "key": key, "reset_to_defaults": True}
+
+
+# ---------- SEO: sitemap.xml + robots.txt ----------
+@api_router.get("/sitemap.xml")
+async def sitemap():
+    settings = await _cms_fetch("settings")
+    base = (settings.get("site_url") or "").rstrip("/") or ""
+    # Pull dynamic slugs for sample routes so they get indexed individually (hash links).
+    routes = await _cms_fetch("sample_routes")
+    urls = [
+        (f"{base}/", "1.0", "weekly"),
+        (f"{base}/#services", "0.9", "weekly"),
+        (f"{base}/#vehicles", "0.8", "weekly"),
+        (f"{base}/#routes", "0.8", "weekly"),
+        (f"{base}/#reviews", "0.7", "monthly"),
+        (f"{base}/#faq", "0.7", "monthly"),
+        (f"{base}/#trip-builder", "0.9", "weekly"),
+        (f"{base}/privacy", "0.3", "yearly"),
+        (f"{base}/terms", "0.3", "yearly"),
+    ]
+    for r in (routes or []):
+        slug = r.get("slug")
+        if slug:
+            urls.append((f"{base}/#route-{slug}", "0.6", "monthly"))
+    today = datetime.now(timezone.utc).date().isoformat()
+    body = ['<?xml version="1.0" encoding="UTF-8"?>',
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for loc, pri, chg in urls:
+        body.append(
+            f"  <url><loc>{loc}</loc><lastmod>{today}</lastmod>"
+            f"<changefreq>{chg}</changefreq><priority>{pri}</priority></url>"
+        )
+    body.append("</urlset>")
+    return Response(content="\n".join(body), media_type="application/xml")
+
+
+@api_router.get("/robots.txt", response_class=PlainTextResponse)
+async def robots_txt():
+    settings = await _cms_fetch("settings")
+    base = (settings.get("site_url") or "").rstrip("/") or ""
+    return (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin\n"
+        f"Sitemap: {base}/api/sitemap.xml\n"
+    )
+
+
 # ---------- App wiring ----------
 app.include_router(api_router)
 
@@ -657,6 +805,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_tasks():
+    try:
+        await seed_cms_defaults()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("CMS seeding failed on startup: %s", exc)
 
 
 @app.on_event("shutdown")

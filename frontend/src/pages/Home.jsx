@@ -18,6 +18,7 @@ import FAQ from "@/components/site/FAQ";
 import Instagram from "@/components/site/Instagram";
 import Footer from "@/components/site/Footer";
 import FloatingWhatsapp from "@/components/site/FloatingWhatsapp";
+import SEO from "@/components/site/SEO";
 
 export default function Home() {
   const location = useLocation();
@@ -48,6 +49,7 @@ export default function Home() {
 
   return (
     <main className="relative bg-sand-50 text-[#111827]" data-testid="home-page">
+      <SEO path="/" />
       <Navbar />
       <Hero />
       <TrustBar />

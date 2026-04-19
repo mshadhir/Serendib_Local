@@ -1,0 +1,58 @@
+{
+  "summary": "Iteration 8 — Full CMS + SEO migration verified. 17/17 new backend pytest cases pass covering GET /api/cms (14 keys), GET /api/cms/{key}, 404 on unknown, PUT /api/admin/cms with Bearer auth (401/404/422 all correct), POST /api/admin/cms/{key}/reset (locations restore to 19), /api/sitemap.xml (contains /privacy, /terms, #services, #faq + route-{slug} entries), /api/robots.txt (User-agent *, Disallow /admin, Sitemap: line). Frontend renders CMS-driven content on home, SEO meta/OG/Twitter/ld+json TravelAgency are all present, /admin has noindex, /privacy, /terms, /nonsense 404 testids all render, admin login works, all 14 CMS sub-tabs are visible and the Settings singleton form shows every field wired to CMS data. Sign-in toast shows 'Signed in.' Light regression on iteration_7 left intact (QuickBook, TripBuilder, Admin leads/bookings tabs all still visible).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Home page (LanguageSwitcher or a <select>)",
+        "issue": "React hydration warning: 'In HTML, <span> cannot be a child of <option>. This will cause a hydration error.' Fires on every /home load. Functional but will be flagged by Lighthouse / React 19 / strict-mode SSR. Likely inside a select/option that renders <span> children (LanguageSwitcher EN/DE/FR or vehicle/month selects in TripBuilder).",
+        "selector": "option > span (exact location not pinpointed — search repo for option containing span)",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "ContentProvider boot fetch",
+        "issue": "GET /api/cms is called 2 times on home load, not once as the spec states. Likely React 18 StrictMode double-invoke of effect in development OR the provider + a second consumer both triggering. Not user-visible but doubles API load.",
+        "affected_selectors": ["/api/cms (network)"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_cms_v8.py",
+    "/app/test_reports/pytest/iter8_results.xml"
+  ],
+  "action_items": [
+    "Locate the <option><span>…</span></option> pattern and replace the inner span with plain text (or move the span outside the option). Grep: `grep -R \"<option\" frontend/src | head`.",
+    "Verify ContentProvider only fetches /api/cms once — either wrap in useRef guard or disable StrictMode double-invoke. Low priority but worth fixing before prod.",
+    "(Optional) Consider caching /api/cms response with a short ETag/Cache-Control so repeat visits are even cheaper."
+  ],
+  "critical_code_review_comments": [
+    "server.py is now ~820 lines and houses payments, bookings, CMS and SEO — split into routers/{cms,bookings,payments,seo}.py before it hits 1000 lines.",
+    "seed_cms_defaults() is called on every GET /api/cms (line 686) AND on startup — idempotent but wasteful. Remove the in-request call and rely on startup only, or guard with a module-level 'seeded_once' flag.",
+    "cms_public_all() sorts by 'order' only when the first item has 'order'. If admins re-order keys where item[0] lacks the field but item[1] has it, sort is silently skipped. Safer: sort if ANY item has 'order'.",
+    "PUT /api/admin/cms/{key} accepts arbitrary items/data with no per-key schema validation. An admin can ship malformed 'services' and the frontend will crash. Consider per-key Pydantic schemas (e.g. ServiceItem, LocationItem).",
+    "Robots.txt is served from /api/robots.txt but Google expects it at site root /robots.txt — ensure the ingress rewrites, otherwise crawlers will miss it. Same concern for /api/sitemap.xml vs /sitemap.xml (a static fallback robots.txt at /app/frontend/public/robots.txt exists, good).",
+    "ADMIN_TOKEN comparison is a direct string compare — fine for a single shared secret but swap to hmac.compare_digest to avoid timing leaks.",
+    "No rate-limit on /api/admin/cms — someone with the token can spam resets. Low priority since token is private, but worth noting."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_cms_v8.py",
+    "/app/test_reports/pytest/iter8_results.xml",
+    "/app/test_reports/iteration_8.json"
+  ],
+  "success_rate": {
+    "backend": "100% on iteration scope (17/17 new CMS+SEO tests).",
+    "frontend": "~95% — all critical CMS/SEO flows verified; one hydration warning and one duplicate-fetch minor issue."
+  },
+  "test_credentials": "Admin password: 'changeme-serendib-admin' (from /app/memory/test_credentials.md). No other creds needed.",
+  "seed_data_creation": "Test flow creates TEST_x / TEST_y location items then resets back to 19 defaults. Test flow toggles settings.brand_name to 'TEST_Serendib_V8' then resets back to 'Serendib Local'. Post-test state is clean / back to defaults.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Iteration 8 verified the CMS + SEO launch: 14 CMS keys (settings singleton + 13 list collections), all admin endpoints with Bearer 'changeme-serendib-admin', Reset restores defaults (locations=19), sitemap.xml + robots.txt render dynamically. Frontend: ContentProvider hits /api/cms (twice though — StrictMode), SEO helmet sets title/desc/OG/Twitter/ld+json TravelAgency on home, /admin gets noindex,nofollow, /privacy + /terms + unknown→/nonsense all render their [data-testid] pages with correct <title>. Admin UI has 3 top tabs (Leads/Bookings/Content) and Content exposes [data-testid=cms-editor] with 14 sub-tabs cms-tab-{settings,services,vehicles,locations,trip_experiences,stay_budgets,stay_styles,reviews,faqs,concierge,sample_routes,team,experiences,trust_items}. Settings singleton tab shows every field from cms_defaults.settings; list tabs show add/remove/reorder/save/reset. Known non-blocking issues: (1) React hydration warning '<span> cannot be a child of <option>' — small DOM fix needed. (2) /api/cms fetched 2x on home — dedupe the boot fetch. These were surfaced but not fixed by this agent.",
+  "rca of the issue": "Hydration warning RCA: a <select><option><span>…</span></option></select> pattern exists somewhere under ContentProvider-rendered components (likely LanguageSwitcher or a select inside TripBuilder/Vehicles). React 18 rejects <span> as a child of <option>; the fix is to render only text (string) inside <option>, moving any icon/emoji wrapper outside or into the trigger button. Reproduction: open https://wanderlust-sri.preview.emergentagent.com/ and watch console — error surfaces on mount."
+}

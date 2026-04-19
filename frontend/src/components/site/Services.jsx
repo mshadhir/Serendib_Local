@@ -5,40 +5,33 @@ import { ROAD_TRIP_PACKAGE } from "@/lib/packages";
 import BookNowModal from "@/components/site/BookNowModal";
 import QuickBookModal from "@/components/site/QuickBookModal";
 import TrustInline from "@/components/site/TrustInline";
+import { useCMS } from "@/context/ContentContext";
 
-const SERVICES = [
+const ICON_MAP = { Plane, MapPin, Sparkles };
+
+const FALLBACK_SERVICES = [
   {
-    slug: "airport-transfer",
-    icon: Plane,
-    title: "Airport Transfer",
-    desc: "Stress-free pickup or drop-off from Bandaranaike International Airport. Meet-and-greet, help with luggage, comfortable air-conditioned car.",
-    price: "From $35",
-    cta: "quickbook",
-    mode: "airport",
+    slug: "airport-transfer", icon: "Plane", title: "Airport Transfer",
+    desc: "Stress-free pickup or drop-off from Bandaranaike International Airport.",
+    price: "From $35", cta: "quickbook", mode: "airport",
   },
   {
-    slug: "day-tour",
-    icon: MapPin,
-    title: "Private Day Tour",
-    desc: "Pick any destination — Sigiriya, Kandy, Galle, Ella. We drive, we guide, we stop whenever you want. Accommodation not included — we recommend the best local guesthouses for your budget.",
-    price: "From $85 per day",
-    cta: "quickbook",
-    mode: "dayTour",
+    slug: "day-tour", icon: "MapPin", title: "Private Day Tour",
+    desc: "Pick any destination — Sigiriya, Kandy, Galle, Ella.",
+    price: "From $85 per day", cta: "quickbook", mode: "dayTour",
   },
   {
-    slug: "road-trip",
-    icon: Sparkles,
-    title: "Fully Handled Road Trip",
-    desc: "Car, driver, AND accommodation all sorted by us. You tell us how many days and what you want to see — we handle everything. Just show up and enjoy Sri Lanka.",
-    price: "From $150 per day, all inclusive",
-    cta: "book",
-    badge: "Most Popular",
+    slug: "road-trip", icon: "Sparkles", title: "Fully Handled Road Trip",
+    desc: "Car, driver, AND accommodation all sorted by us.",
+    price: "From $150 per day, all inclusive", cta: "book", badge: "Most Popular",
   },
 ];
 
 export default function Services() {
   const [bookOpen, setBookOpen] = useState(false);
   const [quickMode, setQuickMode] = useState(null); // 'airport' | 'dayTour' | null
+  const cmsServices = useCMS("services");
+  const SERVICES = cmsServices?.length ? cmsServices : FALLBACK_SERVICES;
 
   return (
     <section id="services" data-testid="services-section" className="relative bg-sand-50 py-24 md:py-32">
@@ -54,8 +47,8 @@ export default function Services() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8" data-testid="services-grid">
           {SERVICES.map((s, i) => {
-            const Icon = s.icon;
-            const isPopular = s.slug === "road-trip";
+            const Icon = ICON_MAP[s.icon] || Sparkles;
+            const isPopular = s.slug === "road-trip" || s.popular;
             const handleClick = () => {
               if (s.cta === "quickbook") setQuickMode(s.mode);
               else setBookOpen(true);

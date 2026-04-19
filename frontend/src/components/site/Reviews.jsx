@@ -1,7 +1,10 @@
 import { Star, Quote } from "lucide-react";
 import { REVIEWS } from "@/lib/siteData";
+import { useCMS } from "@/context/ContentContext";
 
 export default function Reviews() {
+  const cmsReviews = useCMS("reviews");
+  const items = cmsReviews?.length ? cmsReviews : REVIEWS;
   return (
     <section
       id="reviews"
@@ -31,7 +34,7 @@ export default function Reviews() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {REVIEWS.map((r, i) => (
+          {items.map((r, i) => (
             <article
               key={r.name}
               data-testid={`review-card-${i}`}

@@ -4,8 +4,10 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   LogOut, Lock, Mail, Calendar, Tag, Users, TrendingUp, Search, Download, ArrowLeft,
-  MessageSquare, DollarSign, Receipt,
+  MessageSquare, DollarSign, Receipt, Settings as SettingsIcon,
 } from "lucide-react";
+import CmsEditor from "@/components/site/CmsEditor";
+import SEO from "@/components/site/SEO";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -158,6 +160,7 @@ export default function Admin() {
   if (!token) {
     return (
       <main className="min-h-screen bg-sand-50 flex items-center justify-center px-6" data-testid="admin-login">
+        <SEO title="Admin · Sign in" noindex path="/admin" />
         <div className="w-full max-w-md">
           <Link to="/" className="inline-flex items-center gap-2 text-[#4B5563] hover:text-jungle-700 text-sm mb-8">
             <ArrowLeft className="h-4 w-4" /> Back to site
@@ -186,6 +189,7 @@ export default function Admin() {
   // -------- Dashboard --------
   return (
     <main className="min-h-screen bg-sand-50" data-testid="admin-dashboard">
+      <SEO title="Admin dashboard" noindex path="/admin" />
       <header className="border-b border-sand-200 bg-sand-50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
           <Link to="/" className="font-display text-xl text-[#111827]">
@@ -215,10 +219,30 @@ export default function Admin() {
           >
             Bookings <span className="text-xs opacity-75 ml-1">({bookings.length})</span>
           </button>
+          <button
+            onClick={() => setTab("content")}
+            data-testid="admin-tab-content"
+            className={`rounded-full px-5 py-2 text-sm font-medium transition-all inline-flex items-center gap-1.5 ${tab === "content" ? "bg-jungle-700 text-sand-50" : "text-[#111827] hover:text-jungle-700"}`}
+          >
+            <SettingsIcon className="h-3.5 w-3.5" /> Content
+          </button>
         </div>
       </div>
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 py-8">
+        {tab === "content" ? (
+          <div data-testid="admin-content-tab">
+            <div className="mb-8">
+              <h1 className="font-display text-4xl md:text-5xl leading-tight">Content manager</h1>
+              <p className="mt-2 text-[#4B5563] text-sm max-w-2xl">
+                Everything shown on the public site is stored in the CMS. Pick a tab below
+                to edit. Changes are live the moment you hit Save.
+              </p>
+            </div>
+            <CmsEditor token={token} />
+          </div>
+        ) : (
+        <>
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
           <div>
             <h1 className="font-display text-4xl md:text-5xl leading-tight">
@@ -364,6 +388,8 @@ export default function Admin() {
               </table>
             </div>
           </div>
+        )}
+        </>
         )}
       </section>
     </main>

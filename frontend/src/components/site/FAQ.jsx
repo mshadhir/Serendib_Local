@@ -1,35 +1,15 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useLang } from "@/context/LangContext";
+import { useCMS } from "@/context/ContentContext";
 
-const FAQS = [
-  {
-    q: "What's the best time to visit Sri Lanka?",
-    a: "The short answer: there's always somewhere dry. The south & west coast + hill country are best from December to March. The east coast + Jaffna are best from May to September. Shoulder months (April, October) are often the sweet spot — less crowds, lower prices, and most regions still pleasant.",
-  },
-  {
-    q: "Is Sri Lanka safe for solo female travellers?",
-    a: "Yes, overwhelmingly so — and our trips are even safer because you're with a local driver-guide the whole time, staying in vetted accommodations, and always a WhatsApp message away from us. Around 40% of our guests are solo women, many repeat travellers.",
-  },
-  {
-    q: "Do I need a visa?",
-    a: "Most nationalities need an ETA (Electronic Travel Authorisation) which costs around USD 50 and you apply online in 10 minutes at eta.gov.lk before you fly. We send you a step-by-step guide once you book.",
-  },
-  {
-    q: "Can I customise one of your packages?",
-    a: "That's literally the whole point. Every package is a starting shape — we'll rearrange days, swap hotels, add experiences, skip anything you're not into. No change fees. The price just adjusts up or down transparently.",
-  },
-  {
-    q: "What's your cancellation policy?",
-    a: "Free cancellation up to 30 days before arrival (full refund minus any hotel deposits we've already paid on your behalf). 15-29 days: 50% refund. Less than 15 days: no refund, but we can usually reschedule your trip for a small fee.",
-  },
-  {
-    q: "How much should I budget beyond the package price?",
-    a: "Roughly USD 20-40 per day per person for lunches, drinks, extra experiences and tips. Sri Lanka is still wonderfully affordable compared to most Asian destinations — a fancy seafood dinner rarely goes above USD 15.",
-  },
+const FALLBACK_FAQS = [
+  { q: "What's the best time to visit Sri Lanka?", a: "There's always somewhere dry — see our live FAQ managed from admin." },
 ];
 
 export default function FAQ() {
   const { t } = useLang();
+  const cmsFaqs = useCMS("faqs");
+  const FAQS = cmsFaqs?.length ? cmsFaqs : FALLBACK_FAQS;
   return (
     <section
       id="faq"

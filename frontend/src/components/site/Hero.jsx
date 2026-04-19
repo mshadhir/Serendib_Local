@@ -1,9 +1,13 @@
 import { ArrowRight, Play } from "lucide-react";
 import { HERO, WHATSAPP_LINK } from "@/lib/siteData";
 import { useLang } from "@/context/LangContext";
+import { useSettings } from "@/context/ContentContext";
 
 export default function Hero() {
   const { t } = useLang();
+  const settings = useSettings();
+  const image = settings.hero_image || HERO.image;
+  const title = settings.hero_title || HERO.title;
   return (
     <section
       id="top"
@@ -12,7 +16,7 @@ export default function Hero() {
     >
       <div className="absolute inset-0 overflow-hidden">
         <img
-          src={HERO.image}
+          src={image}
           alt="Sri Lanka tea plantation landscape"
           className="h-full w-full object-cover will-change-transform animate-ken-burns"
           loading="eager"
@@ -31,7 +35,7 @@ export default function Hero() {
           data-testid="hero-title"
           className="font-display text-white text-5xl sm:text-6xl lg:text-[5.75rem] leading-[0.95] tracking-tight max-w-4xl"
         >
-          {HERO.title}
+          {title}
         </h1>
         <p
           data-testid="hero-sub"
