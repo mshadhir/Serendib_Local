@@ -1,106 +1,63 @@
 # Serendib Local — Product Requirements
 
-## Original problem statement
-Build a full user-friendly tourism website for a new Sri Lanka private-tour business. Sections: transparent→frosted Navbar with persistent WhatsApp CTA, cinematic Hero with slow zoom, Trust Bar, Why Us pillars, Packages (Most Popular/Most Unique/Best for Couples), Experiences grid (8 moments), Meet the Team (2 profiles), Reviews (UK couple / German solo / Australian female), Custom Trip Builder firing WhatsApp/email, Blog (3 SEO articles), Footer, animated Floating WhatsApp button.
-
-V2 additions: package filter bar, day-by-day accordion, What's Included checklist, sticky "Book This" CTA on detail page, Why Book Direct section, FAQ, USD/GBP/EUR currency toggle, and a Custom Plan option.
+## Original positioning (V6)
+Sri Lanka **private car & driver** service. No fixed packages, no group buses — a flexible chauffeur-driven product where travellers plan their own trip and ride with a vetted local driver who handles everything along the way.
 
 ## Architecture
-- **Backend**: FastAPI + MongoDB (single write endpoint for leads).
-- **Frontend**: React 19 + React Router v7, Tailwind CSS, Shadcn UI (Accordion, Sonner), Lucide icons. Currency state via Context + localStorage.
-- **Fonts**: Libre Baskerville (display serif) + Outfit (body sans).
-- **Palette**: sand (#F9F6F0), jungle greens (#1A362D / #142A23), clay accent (#C05A45).
+- **Backend**: FastAPI + MongoDB + `emergentintegrations.payments.stripe.checkout` + Resend (dormant).
+- **Frontend**: React 19 + React Router v7 + Tailwind + Shadcn UI (Dialog, Accordion, Sonner) + Lucide icons.
+- Context: `CurrencyProvider` (USD/GBP/EUR, localStorage) + `LangProvider` (EN/DE/FR).
+- Fonts: Libre Baskerville (display) + Outfit (body).
+- Palette: sand, jungle green, clay accent.
 
 ## User personas
-1. UK/Aus/Euro couple (mid-30s) planning a 10-day private trip — wants trust signals + itinerary transparency.
-2. Solo female traveller — wants safety + direct WhatsApp contact.
-3. Last-minute layover traveller — needs short-stay options (3–5 days).
+- Solo/couple flying into CMB, wanting a private car and flexible plan.
+- Families wanting an all-handled road trip with airport pickup.
+- Digital nomads / short-stay travellers who want airport transfer + day tours only.
 
-## Core requirements (static)
-- Always-visible WhatsApp CTA (top-right + floating bottom-right).
-- No booking system at launch — leads route to WhatsApp + MongoDB.
-- Editorial, cinematic, non-generic design (avoids purple gradients, Inter/Roboto).
+## Core flow (V6 clean rebuild)
+Navbar → Hero ("Your Private Driver. Your Sri Lanka.") → TrustBar → **Services (3 cards: Airport $35 / Day Tour $85-day / Fully Handled Road Trip $150-day w/ Book Now)** → HowItWorks (4 steps) → Vehicles & pricing (Sedan/SUV/Van) → Instant Price widget → Concierge (6 cards) → Sample Routes (3) → Experiences → Team → Reviews → Why Book Direct → Trip Builder → FAQ → Instagram → Footer.
 
-## Implemented — 2026-02 (V1 + V2)
-### V1
-- Navbar (transparent → frosted on scroll).
-- Hero with Ken Burns zoom, eyebrow credibility, 3 CTAs.
-- Trust Bar (4 items) / Why Us (4 pillars) / Packages (3 cards).
-- Experiences (8-tile dark-green grid) / Team (2 cards) / Reviews (3).
-- Trip Builder form → `POST /api/trip-inquiries` + WhatsApp deep-link.
-- Blog (3 SEO articles), Footer, Floating WhatsApp w/ pulse ring.
-- Backend: `GET /api/`, `POST /api/trip-inquiries`, `GET /api/trip-inquiries`, status endpoints.
+Routes live: `/`, `/admin`, `/booking-confirmed`.
+Routes removed in V6: `/packages/:slug`, `/deposit/:slug`, `/car-and-driver` (content merged into home).
 
-### V2
-- `/app/frontend/src/lib/packages.js` — 4 packages with full itineraries, multi-currency pricing, included/excluded.
-- Route `/packages/:slug` → `PackageDetail.jsx` (hero + itinerary accordion + What's Included grid + sticky Book This CTA + bottom CTA).
-- Package filter bar (duration single-select + style multi-select).
-- `CurrencyContext` (USD/GBP/EUR, persisted).
-- "Why Book Direct" section (25% commission callout).
-- FAQ section (6 items, Shadcn accordion).
-- "Design your own journey" Custom Plan card.
-- Font upgrade: Libre Baskerville + Outfit.
+## Backend endpoints
+- Public: `POST /api/trip-inquiries`, `POST /api/bookings/create-checkout`, `GET /api/bookings/status/{session_id}`, `POST /api/webhook/stripe`, legacy `POST /api/payments/checkout` + `GET /api/payments/status/{id}`.
+- Admin (Bearer `ADMIN_TOKEN`): `POST /api/admin/login`, `GET /api/admin/leads`, `GET /api/admin/bookings`, `PATCH /api/admin/bookings/{id}`.
 
-### V3 — 2026-02 (P2 items)
-- **Admin dashboard** at `/admin`:
-  - Backend: `POST /api/admin/login` + `GET /api/admin/leads` (Bearer auth via `ADMIN_TOKEN` env var).
-  - Frontend: password screen → stats cards (total / last-7-days / avg-days / top-interest) + searchable leads table + CSV export + logout.
-  - Admin password in `/app/memory/test_credentials.md`.
-- **EN / DE / FR language switcher**:
-  - `LangContext` + `useLang()` + `t(key)`, persisted via `localStorage.sl_lang`.
-  - `/app/frontend/src/lib/i18n.js` — ~50-key dictionary for EN/DE/FR.
-  - Globe dropdown in Navbar (desktop + mobile).
-  - Translated surfaces: Nav, Hero, TripBuilder, FAQ, Footer, FloatingWhatsapp, Instagram section. Package itineraries + blog stay EN (noted for client).
-- **Instagram embed**: new 8-tile grid section above Footer linking to @serendiblocal. **MOCKED** — uses static images from EXPERIENCES data; swap to Instagram Graph API when credentials are available.
+## Bookings data model (MongoDB `bookings`)
+`booking_id, session_id, package_slug, package_name, arrival_date, departure_date, num_days, num_travellers, price_per_person, total_price, deposit_amount (10%), balance_due, guest_name, guest_email, guest_whatsapp, guest_country, special_requests, stripe_payment_id, payment_status, status (pending|deposit_paid|trip_confirmed|in_progress|completed|cancelled), emails_sent, created_at, updated_at`.
 
-### V4 — 2026-02 (Payments + Email)
-- **Stripe Checkout deposit flow**:
-  - `/app/frontend/src/pages/Deposit.jsx` at route `/deposit/:slug` — 10% deposit of package price (server-side fixed in `DEPOSIT_PACKAGES`).
-  - Backend: `GET /api/payments/packages`, `POST /api/payments/checkout`, `GET /api/payments/status/{session_id}` (with idempotent update + graceful fallback for expired sessions), `POST /api/webhook/stripe`.
-  - MongoDB `payment_transactions` collection.
-  - "Pay 10% deposit" CTA buttons on PackageDetail (hero + bottom).
-  - Uses `emergentintegrations.payments.stripe.checkout` with `STRIPE_API_KEY=sk_test_emergent` (swap to real key for prod).
-  - Frontend polls `/api/payments/status/{id}` on return (max 12 attempts, 2s interval) then shows success / failed / cancelled UI.
-- **Resend email hook** (dormant — needs API key):
-  - Fires styled HTML notification to `NOTIFY_EMAIL` (hello@serendiblocal.com) on every new trip inquiry.
-  - Non-blocking via `asyncio.to_thread` + `asyncio.create_task`.
-  - **Graceful no-op when `RESEND_API_KEY` empty** — logs a warning and returns; does not fail the request.
-  - Activate by: 1) get key from resend.com, 2) paste into `RESEND_API_KEY` in `/app/backend/.env`, 3) `sudo supervisorctl restart backend`, 4) verify serendiblocal.com domain in Resend for deliverability.
+## Implemented
+### V1 – V5 (see git log)
+- Hero/TrustBar/WhyUs/Packages/Experiences/Team/Reviews/TripBuilder/Blog/Footer.
+- Stripe deposit page (`/deposit/:slug`) + admin dashboard + EN/DE/FR + Instagram embed + Car & Driver dedicated page with Instant Price widget.
 
-### V5 — 2026-02 (Car & Driver service)
-- New service — DIY trips with a chauffeur, airport-to-airport.
-- `/app/frontend/src/lib/carAndDriver.js` — data (pillars, 3 vehicle tiers, included list, 6 concierge services, 3 sample routes, 5 car-specific FAQ).
-- `/app/frontend/src/components/site/CarAndDriver.jsx` — home teaser section (between WhyBookDirect and Experiences).
-- `/app/frontend/src/pages/CarAndDriverPage.jsx` — full `/car-and-driver` route: hero + 4 pillars + 3 vehicle tiers ($65/$85/$110 per day) with enquire buttons + included-per-day list + concierge grid + 3 sample routes + FAQ + bottom CTA.
-- NAV updated with "Car & Driver" link; EN/DE/FR i18n keys added (`Car & Driver` / `Auto & Fahrer` / `Voiture & Chauffeur`).
-- NAV hash hrefs prefixed with `/` so home anchors resolve from any detail page.
+### V6 — 2026-02 (Redesign: focus on Car & Driver)
+- Removed: Packages section, Custom Plan card, Blog, WhyUs lifestyle section, `/packages/:slug`, `/deposit/:slug`, `/car-and-driver` dedicated page.
+- New section components: `HowItWorks`, `Vehicles`, `Concierge`, `SampleRoutes`, `InstantPriceBlock`.
+- Services grid now the primary offer (Airport / Day Tour / Road Trip); Road Trip uses the existing 3-step Book Now modal → Stripe Checkout.
+- Booking emails (admin + guest) fire on first "paid" transition via Resend (dormant until `RESEND_API_KEY` set).
+- Admin dashboard: Leads + Bookings tabs with status dropdown.
+- Simplified nav: Services · Vehicles · Routes · Reviews · FAQ (+ EN/DE/FR translations).
 
 ## Testing
-- iteration_1.json — V2: 17/17 features passed.
-- iteration_2.json — V3: 26 new features + V2 regressions, backend 23 pytest cases passed.
-- iteration_3.json — V4: 19 new features + regressions, backend 33 pytest cases passed.
-- iteration_4.json — V5: 38 features (Car & Driver page + home section + nav i18n + all regressions).
-- Test credentials: `/app/memory/test_credentials.md` (admin password).
+- iteration_1/2/3/4/5.json — all iterations passed. V6 iteration_5: 30+ frontend features + 16/16 backend tests green.
+- Test credentials: `/app/memory/test_credentials.md`.
 
 ## Prioritised backlog
 ### P1
-- **Paste real `RESEND_API_KEY` in `/app/backend/.env`** to activate lead-notification emails (currently dormant).
-- Verify `serendiblocal.com` domain in Resend for production deliverability.
-- Real WhatsApp number + client-provided team photos & bios.
-- Swap `STRIPE_API_KEY` to live Stripe key for production.
-- Swap Instagram mock for real Instagram Graph API once client supplies credentials.
-- Replace placeholder blog cards with actual MDX articles for SEO.
-- Live exchange-rate fetch (currently hard-coded per-package figures).
-- Translate package itineraries + blog into DE/FR (currently EN only).
+- Paste real `RESEND_API_KEY` → emails go live (admin + guest).
+- Verify `serendiblocal.com` DNS in Resend.
+- Swap placeholder daily rates / WhatsApp number / team photos.
+- Switch `STRIPE_API_KEY` to real live key before launch.
 
 ### P2
-- CMS for packages / blog (so non-devs can edit content).
-- Admin dashboard: lead status pipeline (new / replied / booked / lost), notes.
-- Admin dashboard: payments tab (view transactions, refund actions).
-- Send deposit-confirmation email to customer on successful payment.
-- Gallery page (dedicated).
+- Admin dashboard: date-range filter, lead → booking link, notes field.
+- Send balance-due reminder email 45 days before arrival.
+- Self-serve balance payment (90%) flow.
 
 ### P3
-- Availability calendar + per-date pricing.
-- Full balance payment flow (the remaining 90% due 14 days before arrival).
-- Google Reviews & TripAdvisor API embed for live counts.
+- Availability calendar for drivers/vehicles.
+- Google Reviews live badge.
+- CMS for routes/concierge content.
