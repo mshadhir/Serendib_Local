@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "@/pages/Home";
 import PackageDetail from "@/pages/PackageDetail";
 import Admin from "@/pages/Admin";
+import Deposit from "@/pages/Deposit";
 import { Toaster } from "@/components/ui/sonner";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { LangProvider } from "@/context/LangContext";
@@ -17,6 +18,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/packages/:slug" element={<PackageDetail />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/deposit/:slug" element={<Deposit />} />
             </Routes>
           </BrowserRouter>
           <Toaster position="bottom-center" richColors />

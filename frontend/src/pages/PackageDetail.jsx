@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Plus, MapPin, Calendar, Users, Star, MessageCircle } from "lucide-react";
+import { ArrowLeft, Check, Plus, MapPin, Calendar, Users, Star, MessageCircle, CreditCard } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { getPackageBySlug } from "@/lib/packages";
 import { useCurrency } from "@/context/CurrencyContext";
@@ -106,6 +106,13 @@ export default function PackageDetail() {
             >
               <MessageCircle className="h-4 w-4" /> Book this trip
             </a>
+            <Link
+              to={`/deposit/${pkg.slug}`}
+              data-testid="hero-pay-deposit"
+              className="inline-flex items-center gap-2 rounded-full bg-sand-50 hover:bg-clay-500 hover:text-sand-50 text-jungle-700 px-7 py-4 text-sm font-medium transition-all"
+            >
+              <CreditCard className="h-4 w-4" /> Pay 10% deposit
+            </Link>
             <Link
               to="/#trip-builder"
               className="inline-flex items-center rounded-full border border-white/30 hover:border-white text-white/90 px-7 py-4 text-sm font-medium transition-all"
@@ -271,6 +278,13 @@ export default function PackageDetail() {
             >
               <MessageCircle className="h-4 w-4" /> Book this trip
             </a>
+            <Link
+              to={`/deposit/${pkg.slug}`}
+              data-testid="bottom-pay-deposit"
+              className="inline-flex items-center gap-2 rounded-full bg-sand-50 hover:bg-clay-500 hover:text-sand-50 text-jungle-700 px-7 py-4 text-sm font-medium transition-all"
+            >
+              <CreditCard className="h-4 w-4" /> Pay 10% deposit
+            </Link>
             <Link
               to="/#trip-builder"
               className="inline-flex items-center rounded-full border border-sand-50/40 hover:border-sand-50 text-sand-50 px-7 py-4 text-sm font-medium transition-all"
