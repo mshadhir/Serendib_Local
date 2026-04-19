@@ -140,8 +140,8 @@ export default function Admin() {
   const downloadCsv = () => {
     const rows = tab === "leads"
       ? [
-        ["Name", "Email", "Days", "Travellers", "Vehicle", "When", "Stops", "Experiences", "Message", "Created At"],
-        ...filteredLeads.map((l) => [l.name, l.email, l.days, l.travellers || "", l.vehicle || "", l.travel_month || "", (l.locations || []).join(" | "), (l.interests || []).join(" | "), (l.message || "").replace(/\n/g, " "), l.created_at]),
+        ["Name", "Email", "Days", "Travellers", "Vehicle", "When", "Stops", "Experiences", "Stay help", "Stay budget", "Stay styles", "Message", "Created At"],
+        ...filteredLeads.map((l) => [l.name, l.email, l.days, l.travellers || "", l.vehicle || "", l.travel_month || "", (l.locations || []).join(" | "), (l.interests || []).join(" | "), l.accommodation_help === true ? "yes" : l.accommodation_help === false ? "no" : "", l.accommodation_budget || "", (l.accommodation_styles || []).join(" | "), (l.message || "").replace(/\n/g, " "), l.created_at]),
       ]
       : [
         ["Received", "Guest", "Email", "WhatsApp", "Package", "Arrival", "Departure", "Travellers", "Total", "Deposit", "Balance", "Status"],
@@ -266,13 +266,14 @@ export default function Admin() {
                     <th className="text-left px-5 py-3 font-medium">Vehicle</th>
                     <th className="text-left px-5 py-3 font-medium">Stops</th>
                     <th className="text-left px-5 py-3 font-medium">Experiences</th>
+                    <th className="text-left px-5 py-3 font-medium">Stay</th>
                     <th className="text-left px-5 py-3 font-medium">When</th>
                     <th className="text-left px-5 py-3 font-medium">Received</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredLeads.length === 0 && !loading && (
-                    <tr><td colSpan={8} className="px-5 py-16 text-center text-[#4B5563]">No leads yet.</td></tr>
+                    <tr><td colSpan={9} className="px-5 py-16 text-center text-[#4B5563]">No leads yet.</td></tr>
                   )}
                   {filteredLeads.map((l) => (
                     <tr key={l.id} className="border-t border-sand-200 hover:bg-sand-100/60 transition-colors">
@@ -289,6 +290,17 @@ export default function Admin() {
                         <div className="flex flex-wrap gap-1.5 max-w-[220px]">
                           {(l.interests || []).map((i) => (<span key={i} className="inline-flex items-center rounded-full bg-sand-100 border border-sand-200 px-2.5 py-1 text-[11px] text-[#4B5563]">{i}</span>))}
                         </div>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {l.accommodation_help === true ? (
+                          <span className="inline-flex items-center rounded-full bg-clay-500/15 border border-clay-500/40 px-2.5 py-1 text-[11px] font-medium text-clay-600">
+                            {l.accommodation_budget || "help"}
+                          </span>
+                        ) : l.accommodation_help === false ? (
+                          <span className="text-[11px] text-[#4B5563]">self-book</span>
+                        ) : (
+                          <span className="text-[11px] text-[#4B5563]">—</span>
+                        )}
                       </td>
                       <td className="px-5 py-4 text-[#4B5563] max-w-[180px] truncate">{l.travel_month || l.message || "—"}</td>
                       <td className="px-5 py-4 text-[#4B5563] whitespace-nowrap">{formatDate(l.created_at)}</td>

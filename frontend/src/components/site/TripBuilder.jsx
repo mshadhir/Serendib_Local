@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, ArrowRight, Check, Send, MessageCircle, Loader2,
   Car, Truck, Bus, MapPin, Calendar, Users, Sparkles, RotateCcw,
+  BedDouble, Home,
 } from "lucide-react";
 import {
   TRIP_LOCATIONS, TRIP_EXPERIENCES, WHATSAPP_LINK,
@@ -30,10 +31,30 @@ const STEPS = [
   { id: 1, label: "Trip basics",   icon: Calendar },
   { id: 2, label: "Pick stops",    icon: MapPin },
   { id: 3, label: "Experiences",   icon: Sparkles },
-  { id: 4, label: "Your details",  icon: Send },
+  { id: 4, label: "Stay",          icon: BedDouble },
+  { id: 5, label: "Your details",  icon: Send },
 ];
 
 const DAY_PRESETS = [5, 7, 10, 14];
+
+// Accommodation budget bands — per room per night, in USD.
+const STAY_BUDGETS = [
+  { id: "budget",  label: "Budget",        range: "$25–60",   note: "Homestays · family guesthouses" },
+  { id: "mid",     label: "Mid-range",     range: "$60–120",  note: "Boutique guesthouses · 3★ hotels" },
+  { id: "upscale", label: "Upscale",       range: "$120–250", note: "Boutique villas · 4★ hotels" },
+  { id: "luxury",  label: "Luxury",        range: "$250+",    note: "5★ resorts · private villas" },
+];
+
+const STAY_STYLES = [
+  { id: "homestay",    label: "Homestay" },
+  { id: "guesthouse",  label: "Guesthouse" },
+  { id: "boutique",    label: "Boutique hotel" },
+  { id: "villa",       label: "Private villa" },
+  { id: "eco-lodge",   label: "Eco-lodge" },
+  { id: "beach-cabana", label: "Beach cabana" },
+  { id: "tea-bungalow", label: "Tea-country bungalow" },
+  { id: "resort",       label: "Resort" },
+];
 
 export default function TripBuilder() {
   const { t } = useLang();
@@ -44,6 +65,10 @@ export default function TripBuilder() {
   const [travelMonth, setTravelMonth] = useState("");
   const [locations, setLocations] = useState(["sigiriya", "kandy", "ella"]);
   const [experiences, setExperiences] = useState(["rice-curry", "safari"]);
+  const [stayHelp, setStayHelp] = useState("yes"); // 'yes' | 'no' | null
+  const [stayBudget, setStayBudget] = useState("mid");
+  const [stayStyles, setStayStyles] = useState(["boutique", "guesthouse"]);
+  const [stayNotes, setStayNotes] = useState("");
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -64,10 +89,13 @@ export default function TripBuilder() {
     setLocations((prev) => (prev.includes(slug) ? prev.filter((x) => x !== slug) : [...prev, slug]));
   const toggleExperience = (slug) =>
     setExperiences((prev) => (prev.includes(slug) ? prev.filter((x) => x !== slug) : [...prev, slug]));
+  const toggleStayStyle = (slug) =>
+    setStayStyles((prev) => (prev.includes(slug) ? prev.filter((x) => x !== slug) : [...prev, slug]));
 
   const resetAll = () => {
     setStep(1); setDays(10); setTravellers(2); setVehicleId("suv");
     setTravelMonth(""); setLocations([]); setExperiences([]);
+    setStayHelp("yes"); setStayBudget("mid"); setStayStyles([]); setStayNotes("");
     setForm({ name: "", email: "", message: "" });
   };
 
@@ -75,6 +103,9 @@ export default function TripBuilder() {
     locations.map((s) => TRIP_LOCATIONS.find((l) => l.slug === s)?.name).filter(Boolean);
   const experienceLabels = () =>
     experiences.map((s) => TRIP_EXPERIENCES.find((e) => e.slug === s)?.label).filter(Boolean);
+  const stayStyleLabels = () =>
+    stayStyles.map((s) => STAY_STYLES.find((x) => x.id === s)?.label).filter(Boolean);
+  const stayBudgetObj = STAY_BUDGETS.find((b) => b.id === stayBudget) || STAY_BUDGETS[1];
 
   const buildWhatsappMessage = () => {
     const lines = [
@@ -87,8 +118,14 @@ export default function TripBuilder() {
       `Travel month: ${travelMonth || "flexible"}`,
       `Stops: ${locationNames().join(", ") || "—"}`,
       `Experiences: ${experienceLabels().join(", ") || "—"}`,
-      `Est. driver total: $${estimatedTotalUSD} (accommodation + food separate)`,
+      `Accommodation help: ${stayHelp === "yes" ? "Yes please" : "No — I'll book my own"}`,
     ];
+    if (stayHelp === "yes") {
+      lines.push(`Budget: ${stayBudgetObj.label} (${stayBudgetObj.range} per night)`);
+      if (stayStyleLabels().length) lines.push(`Style: ${stayStyleLabels().join(", ")}`);
+      if (stayNotes) lines.push(`Stay notes: ${stayNotes}`);
+    }
+    lines.push(`Est. driver total: $${estimatedTotalUSD} (accommodation + food separate)`);
     if (form.message) lines.push(``, `Notes: ${form.message}`);
     return lines.join("\n");
   };
@@ -110,6 +147,10 @@ export default function TripBuilder() {
         travel_month: travelMonth || null,
         locations,
         interests: experiences,
+        accommodation_help: stayHelp === "yes",
+        accommodation_budget: stayHelp === "yes" ? stayBudget : null,
+        accommodation_styles: stayHelp === "yes" ? stayStyles : [],
+        accommodation_notes: stayHelp === "yes" ? (stayNotes || null) : null,
         message: form.message || null,
       });
       toast.success(t("builder.success"), { description: t("builder.successDesc") });
@@ -430,9 +471,135 @@ export default function TripBuilder() {
               </div>
             )}
 
-            {/* ---------- Step 4 : Contact ---------- */}
+            {/* ---------- Step 4 : Stay / Accommodation ---------- */}
             {step === 4 && (
               <div data-testid="tb-step4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clay-500">
+                  Need a hand with where to stay?
+                </p>
+                <p className="text-sm text-[#4B5563] mt-1">
+                  We've slept in every town on your list — happy to match you with the right
+                  guesthouse, villa or hotel in each stop.
+                </p>
+
+                {/* Yes / No toggle */}
+                <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="tb-stay-help">
+                  {[
+                    { id: "yes", label: "Yes, please plan accommodation too", icon: Home, sub: "We'll send a shortlist with prices" },
+                    { id: "no",  label: "No thanks, I'll book my own stays",  icon: Check, sub: "Just the car + driver for me" },
+                  ].map((o) => {
+                    const Ic = o.icon;
+                    const active = stayHelp === o.id;
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        onClick={() => setStayHelp(o.id)}
+                        data-testid={`tb-stay-${o.id}`}
+                        className={`text-left rounded-xl border p-4 transition-all ${
+                          active
+                            ? "bg-jungle-700 border-jungle-700 text-sand-50"
+                            : "bg-sand-50 border-sand-200 text-[#111827] hover:border-jungle-700"
+                        }`}
+                      >
+                        <Ic className={`h-5 w-5 ${active ? "text-clay-500" : "text-jungle-700"}`} />
+                        <div className="mt-2 text-sm font-medium">{o.label}</div>
+                        <div className={`mt-0.5 text-[11px] ${active ? "text-sand-50/70" : "text-[#4B5563]"}`}>{o.sub}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {stayHelp === "yes" && (
+                  <div className="mt-7 space-y-6" data-testid="tb-stay-details">
+                    {/* Budget band */}
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-clay-500 mb-3">
+                        Budget per room · per night
+                      </label>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2" data-testid="tb-stay-budgets">
+                        {STAY_BUDGETS.map((b) => {
+                          const active = stayBudget === b.id;
+                          return (
+                            <button
+                              key={b.id}
+                              type="button"
+                              onClick={() => setStayBudget(b.id)}
+                              data-testid={`tb-stay-budget-${b.id}`}
+                              className={`text-left rounded-xl border p-3.5 transition-all ${
+                                active
+                                  ? "bg-jungle-700 border-jungle-700 text-sand-50"
+                                  : "bg-sand-50 border-sand-200 text-[#111827] hover:border-jungle-700"
+                              }`}
+                            >
+                              <div className="text-sm font-medium">{b.label}</div>
+                              <div className={`mt-0.5 font-display text-lg ${active ? "text-sand-50" : "text-[#111827]"}`}>{b.range}</div>
+                              <div className={`text-[10px] ${active ? "text-sand-50/70" : "text-[#4B5563]"}`}>{b.note}</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Style preferences */}
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-clay-500 mb-3">
+                        Style preference (pick a few)
+                      </label>
+                      <div className="flex flex-wrap gap-2" data-testid="tb-stay-styles">
+                        {STAY_STYLES.map((s) => {
+                          const active = stayStyles.includes(s.id);
+                          return (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => toggleStayStyle(s.id)}
+                              data-testid={`tb-stay-style-${s.id}`}
+                              className={`rounded-full border px-4 py-2 text-sm transition-all ${
+                                active
+                                  ? "bg-jungle-700 border-jungle-700 text-sand-50"
+                                  : "bg-sand-50 border-sand-200 text-[#111827] hover:border-jungle-700"
+                              }`}
+                            >
+                              {s.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Free-text accommodation notes */}
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-clay-500 mb-3">
+                        Anything specific? (optional)
+                      </label>
+                      <textarea
+                        value={stayNotes}
+                        onChange={(e) => setStayNotes(e.target.value)}
+                        placeholder="e.g. pool preferred · twin beds · vegetarian breakfast · close to beach"
+                        data-testid="tb-stay-notes"
+                        rows={2}
+                        className="w-full rounded-lg bg-sand-50 border border-sand-200 focus:border-jungle-700 outline-none px-4 py-3 text-[#111827] resize-none"
+                      />
+                    </div>
+
+                    <div className="rounded-xl border border-clay-500/30 bg-clay-500/10 px-5 py-4 flex items-start gap-3">
+                      <BedDouble className="h-4 w-4 text-clay-500 mt-0.5 flex-none" />
+                      <p className="text-[13px] text-[#4B5563] leading-relaxed">
+                        <span className="text-[#111827] font-medium">How this works:</span>{" "}
+                        for each of your stops we'll send 2–3 options in this budget band with
+                        photos, real prices and honest notes. You pick what you like — we book
+                        on your behalf, no mark-up.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ---------- Step 5 : Contact ---------- */}
+            {step === 5 && (
+              <div data-testid="tb-step5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-clay-500">
                   Almost there — where should we send the plan?
                 </p>
@@ -499,7 +666,7 @@ export default function TripBuilder() {
                 </button>
               )}
 
-              {step < 4 ? (
+              {step < 5 ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -507,7 +674,7 @@ export default function TripBuilder() {
                       toast.error("Pick at least one stop.");
                       return;
                     }
-                    setStep((n) => Math.min(4, n + 1));
+                    setStep((n) => Math.min(5, n + 1));
                   }}
                   data-testid="tb-continue"
                   className="inline-flex items-center gap-2 rounded-full bg-jungle-700 hover:bg-jungle-800 text-sand-50 px-6 py-3 text-sm font-medium transition-all"
@@ -606,6 +773,33 @@ export default function TripBuilder() {
                         {l}
                       </span>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-jungle-600" data-testid="tb-summary-stay">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-sand-50/60 mb-2">
+                  Accommodation
+                </p>
+                {stayHelp !== "yes" ? (
+                  <p className="text-xs text-sand-50/55">
+                    {stayHelp === "no" ? "Booking own stays — car & driver only." : "Tell us in Step 4."}
+                  </p>
+                ) : (
+                  <div className="space-y-1.5 text-xs text-sand-50/85">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sand-50/60">Budget</span>
+                      <span className="font-medium">{stayBudgetObj.label} · {stayBudgetObj.range}</span>
+                    </div>
+                    {stayStyleLabels().length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {stayStyleLabels().map((l) => (
+                          <span key={l} className="inline-flex items-center rounded-full bg-jungle-800 border border-jungle-600 text-sand-50/90 px-2.5 py-1 text-[11px]">
+                            {l}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
