@@ -100,6 +100,9 @@ export default function Admin() {
       l.name?.toLowerCase().includes(q) ||
       l.email?.toLowerCase().includes(q) ||
       (l.interests || []).some((i) => i.toLowerCase().includes(q)) ||
+      (l.locations || []).some((i) => i.toLowerCase().includes(q)) ||
+      (l.vehicle || "").toLowerCase().includes(q) ||
+      (l.travel_month || "").toLowerCase().includes(q) ||
       (l.message || "").toLowerCase().includes(q)
     );
   }, [leads, query]);
@@ -137,8 +140,8 @@ export default function Admin() {
   const downloadCsv = () => {
     const rows = tab === "leads"
       ? [
-        ["Name", "Email", "Days", "Interests", "Message", "Created At"],
-        ...filteredLeads.map((l) => [l.name, l.email, l.days, (l.interests || []).join(" | "), (l.message || "").replace(/\n/g, " "), l.created_at]),
+        ["Name", "Email", "Days", "Travellers", "Vehicle", "When", "Stops", "Experiences", "Message", "Created At"],
+        ...filteredLeads.map((l) => [l.name, l.email, l.days, l.travellers || "", l.vehicle || "", l.travel_month || "", (l.locations || []).join(" | "), (l.interests || []).join(" | "), (l.message || "").replace(/\n/g, " "), l.created_at]),
       ]
       : [
         ["Received", "Guest", "Email", "WhatsApp", "Package", "Arrival", "Departure", "Travellers", "Total", "Deposit", "Balance", "Status"],
@@ -259,27 +262,35 @@ export default function Admin() {
                   <tr>
                     <th className="text-left px-5 py-3 font-medium">Name</th>
                     <th className="text-left px-5 py-3 font-medium">Email</th>
-                    <th className="text-left px-5 py-3 font-medium">Days</th>
-                    <th className="text-left px-5 py-3 font-medium">Interests</th>
+                    <th className="text-left px-5 py-3 font-medium">Days · Pax</th>
+                    <th className="text-left px-5 py-3 font-medium">Vehicle</th>
+                    <th className="text-left px-5 py-3 font-medium">Stops</th>
+                    <th className="text-left px-5 py-3 font-medium">Experiences</th>
                     <th className="text-left px-5 py-3 font-medium">When</th>
                     <th className="text-left px-5 py-3 font-medium">Received</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredLeads.length === 0 && !loading && (
-                    <tr><td colSpan={6} className="px-5 py-16 text-center text-[#4B5563]">No leads yet.</td></tr>
+                    <tr><td colSpan={8} className="px-5 py-16 text-center text-[#4B5563]">No leads yet.</td></tr>
                   )}
                   {filteredLeads.map((l) => (
                     <tr key={l.id} className="border-t border-sand-200 hover:bg-sand-100/60 transition-colors">
                       <td className="px-5 py-4 font-medium text-[#111827]">{l.name}</td>
                       <td className="px-5 py-4 text-[#4B5563]"><a href={`mailto:${l.email}`} className="inline-flex items-center gap-1.5 hover:text-jungle-700"><Mail className="h-3.5 w-3.5" /> {l.email}</a></td>
-                      <td className="px-5 py-4 text-[#111827]">{l.days}d</td>
+                      <td className="px-5 py-4 text-[#111827] whitespace-nowrap">{l.days}d{l.travellers ? ` · ${l.travellers}p` : ""}</td>
+                      <td className="px-5 py-4 text-[#4B5563] whitespace-nowrap">{l.vehicle || "—"}</td>
                       <td className="px-5 py-4">
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5 max-w-[260px]">
+                          {(l.locations || []).length === 0 ? <span className="text-[11px] text-[#4B5563]">—</span> : (l.locations || []).map((s) => (<span key={s} className="inline-flex items-center rounded-full bg-jungle-700/10 border border-jungle-700/20 px-2.5 py-1 text-[11px] text-jungle-700">{s}</span>))}
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex flex-wrap gap-1.5 max-w-[220px]">
                           {(l.interests || []).map((i) => (<span key={i} className="inline-flex items-center rounded-full bg-sand-100 border border-sand-200 px-2.5 py-1 text-[11px] text-[#4B5563]">{i}</span>))}
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-[#4B5563] max-w-[220px] truncate">{l.message || "—"}</td>
+                      <td className="px-5 py-4 text-[#4B5563] max-w-[180px] truncate">{l.travel_month || l.message || "—"}</td>
                       <td className="px-5 py-4 text-[#4B5563] whitespace-nowrap">{formatDate(l.created_at)}</td>
                     </tr>
                   ))}

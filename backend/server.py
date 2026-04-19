@@ -61,6 +61,10 @@ class TripInquiryCreate(BaseModel):
     email: EmailStr
     days: int = Field(ge=1, le=60)
     interests: List[str] = Field(default_factory=list)
+    locations: List[str] = Field(default_factory=list)
+    vehicle: Optional[str] = Field(default=None, max_length=40)
+    travellers: Optional[int] = Field(default=None, ge=1, le=30)
+    travel_month: Optional[str] = Field(default=None, max_length=60)
     message: Optional[str] = Field(default=None, max_length=2000)
 
 
@@ -71,6 +75,10 @@ class TripInquiry(BaseModel):
     email: EmailStr
     days: int
     interests: List[str] = Field(default_factory=list)
+    locations: List[str] = Field(default_factory=list)
+    vehicle: Optional[str] = None
+    travellers: Optional[int] = None
+    travel_month: Optional[str] = None
     message: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

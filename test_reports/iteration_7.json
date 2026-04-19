@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 7 — Redesigned 4-step TripBuilder (Trip basics → Pick stops → Experiences → Your details) + extended TripInquiry backend model fully verified. New backend fields (locations, vehicle, travellers, travel_month) persist and surface in admin leads. 8/8 new pytest cases pass; prior 67 regression tests still pass (4 pre-existing /api/payments/packages failures are out-of-scope). Full frontend e2e of the wizard + submit + admin table columns + search all pass.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/payments/packages", "issue": "Pre-existing (iteration_6) — old test expects 4 packages but DEPOSIT_PACKAGES now has 3 (real-sri-lanka, hidden-lanka, slow-and-savour). Not caused by this iteration."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_trip_builder_v7.py",
+    "/app/test_reports/pytest/iter7_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "TripBuilder.jsx (642 lines) is getting big — consider extracting Step1/Step2/Step3/Step4 and the live Summary sidebar into sibling files (~150 LOC each). Still readable today, but will bite the next refactor.",
+    "TripBuilder resets the stepper to step 1 on submit success but does NOT open WhatsApp for users with a popup blocker silently ignoring the `window.open(...)` — keep an eye on conversion; a visible WhatsApp link shown post-submit would be safer than relying on window.open.",
+    "Day stepper UI limits max to 45 via the + button, but Pydantic accepts up to 60 and the preset set goes only to 14. Min/max between UI stepper (1–45), day presets (5–14) and backend (1–60) are misaligned. Not a bug, just mildly confusing — pick one upper bound across the stack.",
+    "`canContinueFromStep` is only consulted for step 1→2 transitions via the disabled attr (`disabled={!canContinueFromStep(step + 1) && step === 1}` which is always false because canContinueFromStep(2) checks locations, not step-1 state). The location-count gate is actually enforced by the inline toast in the click handler, so the disabled logic is dead code — harmless but worth cleaning up.",
+    "TRIP_LOCATIONS / TRIP_EXPERIENCES were added to siteData.js — verify there are no duplicate slugs if more locations are added later (no runtime guard today).",
+    "Backend `TripInquiryCreate.travellers` is Optional with ge=1 — accepting None is fine, but the admin table always falls back to '—' when missing; consider defaulting to 1 if omitted so CSVs export a number."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_trip_builder_v7.py"
+  ],
+  "success_rate": {
+    "backend": "100% on iteration scope (8/8 new tests). Overall repo: 67/71 passing, 4 pre-existing payments failures unrelated to this iteration.",
+    "frontend": "100% on iteration scope (TripBuilder wizard, submit payload, admin columns, search all verified)"
+  },
+  "test_credentials": "Admin password: 'changeme-serendib-admin' (from /app/memory/test_credentials.md).",
+  "seed_data_creation": "Inserted 6 TEST_V7* trip inquiries covering: full-field happy path (SUV/Feb 2026/4 pax/sigiriya,kandy,ella), minimal payload, travellers=0 and 31 (422), travel_month=null, 4-location Family Van, plus one live frontend submission 'TEST V7 Frontend' visible in admin leads.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 7 verified: TripBuilder section at [data-testid=trip-builder-section] with heading 'Build your own private car & driver trip.' 4-step wizard works (tb-step1..tb-step4); day presets 5/7/10/14 set days correctly; vehicle switching updates tb-estimate live (Sedan $85×days, SUV $110×days, Van $140×days); step 2 seeded with sigiriya/kandy/ella (tb-locations-count='3 picked'); toggling locations works; empty-locations guard blocks continue with toast; step 3 seeded with rice-curry/safari, toggles work; step 4 back button returns to step 3; on submit POST /api/trip-inquiries receives {days, travellers, vehicle (human label 'SUV'/'Sedan'/'Family Van'), travel_month, locations: ['kandy','ella','sigiriya'], interests, message} and 201s; form resets to step 1; admin dashboard /admin with 'changeme-serendib-admin' shows new columns Name/Email/Days·Pax/Vehicle/Stops/Experiences/When/Received with location & experience chips rendered; search filters by 'sigiriya' and 'SUV' correctly. Pydantic validation: days 1–60, travellers 1–30. Known non-issue: /api/payments/packages tests in test_payments.py fail because DEPOSIT_PACKAGES has 3 items but tests expect 4 — unrelated to this iteration, pre-existed in iteration 6.",
+  "rca of the issue": "No issues found in iteration 7 scope."
+}

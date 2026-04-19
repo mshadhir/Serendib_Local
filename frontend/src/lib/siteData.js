@@ -165,34 +165,46 @@ export const INTERESTS = [
   "Hiking & Nature",
 ];
 
-export const BLOG = [
-  {
-    tag: "Planning",
-    title: "Best time to visit Sri Lanka (month-by-month, honest guide)",
-    excerpt:
-      "Yes, there are two monsoons. No, they won't ruin your trip. Here's exactly what to expect in every region, every month.",
-    read: "8 min read",
-    image:
-      "https://images.unsplash.com/photo-1511529048424-b3adbbb2ef04?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHw0fHxzcmklMjBsYW5rYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85",
-  },
-  {
-    tag: "Wildlife",
-    title: "Sri Lanka vs Kenya safari — a local's blunt comparison",
-    excerpt:
-      "Leopards, elephants, whales — all in one island. Here's where to go, when to avoid the crowds, and what no blog will tell you.",
-    read: "11 min read",
-    image:
-      "https://images.unsplash.com/photo-1730432997123-76a755eb8941?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMGVsZXBoYW50fGVufDB8fHx8MTc3NjQ4Mzk5Nnww&ixlib=rb-4.1.0&q=85",
-  },
-  {
-    tag: "Hidden",
-    title: "Beyond Mirissa: 7 beaches you've never heard of",
-    excerpt:
-      "The south coast is gorgeous but overrun. Here are seven empty coves where you'll share the sand with fishermen, not influencers.",
-    read: "7 min read",
-    image:
-      "https://images.unsplash.com/photo-1704797389166-c7dac99fc633?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHw0fHxzcmklMjBsYW5rYSUyMHRyYWlufGVufDB8fHx8MTc3NjQ4NDAwM3ww&ixlib=rb-4.1.0&q=85",
-  },
+// Stops your driver can route you through. Grouped by region so the trip-builder
+// grid reads like "which of these would you like to spend a night/day in".
+export const TRIP_LOCATIONS = [
+  { slug: "colombo",      name: "Colombo",           region: "Capital",    note: "Airport + city", emoji: "🏙️" },
+  { slug: "negombo",      name: "Negombo",           region: "West Coast", note: "Close to CMB airport", emoji: "🐟" },
+  { slug: "sigiriya",     name: "Sigiriya",          region: "Cultural Triangle", note: "Lion Rock + cave temples", emoji: "🗻" },
+  { slug: "dambulla",     name: "Dambulla",          region: "Cultural Triangle", note: "Cave temples + market", emoji: "🛕" },
+  { slug: "polonnaruwa",  name: "Polonnaruwa",       region: "Cultural Triangle", note: "Ancient ruins by bike", emoji: "🚲" },
+  { slug: "kandy",        name: "Kandy",             region: "Hill Country", note: "Temple of the Tooth", emoji: "🦁" },
+  { slug: "nuwara-eliya", name: "Nuwara Eliya",      region: "Hill Country", note: "Tea country + Blue Train", emoji: "🍃" },
+  { slug: "ella",         name: "Ella",              region: "Hill Country", note: "Nine-Arches + hikes", emoji: "🌉" },
+  { slug: "haputale",     name: "Haputale",          region: "Hill Country", note: "Lipton's Seat sunrise", emoji: "⛰️" },
+  { slug: "yala",         name: "Yala",              region: "South Coast", note: "Leopards + safari", emoji: "🐆" },
+  { slug: "udawalawe",    name: "Udawalawe",         region: "South Coast", note: "Elephants guaranteed", emoji: "🐘" },
+  { slug: "mirissa",      name: "Mirissa",           region: "South Coast", note: "Surf + stilt fishermen", emoji: "🏄" },
+  { slug: "galle",        name: "Galle Fort",        region: "South Coast", note: "Old Dutch ramparts", emoji: "🏰" },
+  { slug: "unawatuna",    name: "Unawatuna",         region: "South Coast", note: "Calm-bay beach", emoji: "🏖️" },
+  { slug: "arugam-bay",   name: "Arugam Bay",        region: "East Coast",  note: "World-class point break", emoji: "🌊" },
+  { slug: "trincomalee",  name: "Trincomalee",       region: "East Coast",  note: "Whales + pristine beaches", emoji: "🐋" },
+  { slug: "jaffna",       name: "Jaffna",            region: "North",       note: "Tamil culture + kool", emoji: "🛺" },
+  { slug: "anuradhapura", name: "Anuradhapura",      region: "Cultural Triangle", note: "2,000-year-old stupas", emoji: "🕉️" },
+  { slug: "knuckles",     name: "Knuckles",          region: "Hill Country", note: "Wild trekking + waterfalls", emoji: "🥾" },
+];
+
+// Experiences your driver + local fixers can arrange along the route.
+export const TRIP_EXPERIENCES = [
+  { slug: "rice-curry",      label: "Home-cooked rice & curry", emoji: "🍛" },
+  { slug: "safari",          label: "Leopard / elephant safari", emoji: "🐆" },
+  { slug: "blue-train",      label: "Blue-train ride through tea", emoji: "🚂" },
+  { slug: "cooking-class",   label: "Cooking class with a local aunty", emoji: "👩‍🍳" },
+  { slug: "tuk-tuk",         label: "Drive your own tuk-tuk", emoji: "🛺" },
+  { slug: "ayurveda",        label: "Ayurveda massage / spa", emoji: "💆" },
+  { slug: "surf-lesson",     label: "Surf lesson in Arugam or Weligama", emoji: "🏄‍♂️" },
+  { slug: "whale-watching",  label: "Whale watching (Mirissa / Trinco)", emoji: "🐋" },
+  { slug: "hike",            label: "Sunrise hike (Ella Rock / Little Adam's)", emoji: "🌄" },
+  { slug: "tea-pick",        label: "Pick tea with a Tamil family", emoji: "🍵" },
+  { slug: "temple",          label: "Temple visit with a monk guide", emoji: "🛕" },
+  { slug: "street-food",     label: "Street-food night tour", emoji: "🥟" },
+  { slug: "beach-bbq",       label: "Beach fish BBQ at sunset", emoji: "🔥" },
+  { slug: "market",          name: "market", label: "Early-morning market run", emoji: "🧺" },
 ];
 
 export const TRUST_BADGES = [
