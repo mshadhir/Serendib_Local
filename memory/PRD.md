@@ -53,16 +53,33 @@ V2 additions: package filter bar, day-by-day accordion, What's Included checklis
   - Translated surfaces: Nav, Hero, TripBuilder, FAQ, Footer, FloatingWhatsapp, Instagram section. Package itineraries + blog stay EN (noted for client).
 - **Instagram embed**: new 8-tile grid section above Footer linking to @serendiblocal. **MOCKED** — uses static images from EXPERIENCES data; swap to Instagram Graph API when credentials are available.
 
+### V4 — 2026-02 (Payments + Email)
+- **Stripe Checkout deposit flow**:
+  - `/app/frontend/src/pages/Deposit.jsx` at route `/deposit/:slug` — 10% deposit of package price (server-side fixed in `DEPOSIT_PACKAGES`).
+  - Backend: `GET /api/payments/packages`, `POST /api/payments/checkout`, `GET /api/payments/status/{session_id}` (with idempotent update + graceful fallback for expired sessions), `POST /api/webhook/stripe`.
+  - MongoDB `payment_transactions` collection.
+  - "Pay 10% deposit" CTA buttons on PackageDetail (hero + bottom).
+  - Uses `emergentintegrations.payments.stripe.checkout` with `STRIPE_API_KEY=sk_test_emergent` (swap to real key for prod).
+  - Frontend polls `/api/payments/status/{id}` on return (max 12 attempts, 2s interval) then shows success / failed / cancelled UI.
+- **Resend email hook** (dormant — needs API key):
+  - Fires styled HTML notification to `NOTIFY_EMAIL` (hello@serendiblocal.com) on every new trip inquiry.
+  - Non-blocking via `asyncio.to_thread` + `asyncio.create_task`.
+  - **Graceful no-op when `RESEND_API_KEY` empty** — logs a warning and returns; does not fail the request.
+  - Activate by: 1) get key from resend.com, 2) paste into `RESEND_API_KEY` in `/app/backend/.env`, 3) `sudo supervisorctl restart backend`, 4) verify serendiblocal.com domain in Resend for deliverability.
+
 ## Testing
 - iteration_1.json — V2: 17/17 features passed.
 - iteration_2.json — V3: 26 new features + V2 regressions, backend 23 pytest cases passed.
+- iteration_3.json — V4: 19 new features + regressions, backend 33 pytest cases passed.
 - Test credentials: `/app/memory/test_credentials.md` (admin password).
 
 ## Prioritised backlog
 ### P1
+- **Paste real `RESEND_API_KEY` in `/app/backend/.env`** to activate lead-notification emails (currently dormant).
+- Verify `serendiblocal.com` domain in Resend for production deliverability.
 - Real WhatsApp number + client-provided team photos & bios.
+- Swap `STRIPE_API_KEY` to live Stripe key for production.
 - Swap Instagram mock for real Instagram Graph API once client supplies credentials.
-- Email forwarding (Resend/SendGrid) of new trip inquiries to `hello@serendiblocal.com`.
 - Replace placeholder blog cards with actual MDX articles for SEO.
 - Live exchange-rate fetch (currently hard-coded per-package figures).
 - Translate package itineraries + blog into DE/FR (currently EN only).
@@ -70,9 +87,11 @@ V2 additions: package filter bar, day-by-day accordion, What's Included checklis
 ### P2
 - CMS for packages / blog (so non-devs can edit content).
 - Admin dashboard: lead status pipeline (new / replied / booked / lost), notes.
+- Admin dashboard: payments tab (view transactions, refund actions).
+- Send deposit-confirmation email to customer on successful payment.
 - Gallery page (dedicated).
 
 ### P3
 - Availability calendar + per-date pricing.
-- Stripe/Razorpay deposit payments.
+- Full balance payment flow (the remaining 90% due 14 days before arrival).
 - Google Reviews & TripAdvisor API embed for live counts.
