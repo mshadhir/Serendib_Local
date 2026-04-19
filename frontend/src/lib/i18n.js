@@ -9,6 +9,7 @@ export const DICT = {
   en: {
     "nav.whyUs": "Why Us",
     "nav.packages": "Packages",
+    "nav.carAndDriver": "Car & Driver",
     "nav.experiences": "Experiences",
     "nav.team": "Team",
     "nav.planTrip": "Plan My Trip",
@@ -61,6 +62,7 @@ export const DICT = {
   de: {
     "nav.whyUs": "Warum Wir",
     "nav.packages": "Reisen",
+    "nav.carAndDriver": "Auto & Fahrer",
     "nav.experiences": "Erlebnisse",
     "nav.team": "Team",
     "nav.planTrip": "Reise Planen",
@@ -113,6 +115,7 @@ export const DICT = {
   fr: {
     "nav.whyUs": "Pourquoi Nous",
     "nav.packages": "Voyages",
+    "nav.carAndDriver": "Voiture & Chauffeur",
     "nav.experiences": "Expériences",
     "nav.team": "Équipe",
     "nav.planTrip": "Mon Voyage",

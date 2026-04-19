@@ -5,6 +5,7 @@ import { useLang } from "@/context/LangContext";
 const NAV_KEY_MAP = {
   "Why Us": "nav.whyUs",
   Packages: "nav.packages",
+  "Car & Driver": "nav.carAndDriver",
   Experiences: "nav.experiences",
   Team: "nav.team",
   "Plan My Trip": "nav.planTrip",

@@ -4,6 +4,7 @@ import Home from "@/pages/Home";
 import PackageDetail from "@/pages/PackageDetail";
 import Admin from "@/pages/Admin";
 import Deposit from "@/pages/Deposit";
+import CarAndDriverPage from "@/pages/CarAndDriverPage";
 import { Toaster } from "@/components/ui/sonner";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { LangProvider } from "@/context/LangContext";
@@ -19,6 +20,7 @@ function App() {
               <Route path="/packages/:slug" element={<PackageDetail />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/deposit/:slug" element={<Deposit />} />
+              <Route path="/car-and-driver" element={<CarAndDriverPage />} />
             </Routes>
           </BrowserRouter>
           <Toaster position="bottom-center" richColors />

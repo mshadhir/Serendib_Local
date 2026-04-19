@@ -15,11 +15,12 @@ export const WHATSAPP_LINK = (text) =>
   )}`;
 
 export const NAV_LINKS = [
-  { label: "Why Us", href: "#why-us" },
-  { label: "Packages", href: "#packages" },
-  { label: "Experiences", href: "#experiences" },
-  { label: "Team", href: "#team" },
-  { label: "Plan My Trip", href: "#trip-builder" },
+  { label: "Why Us", href: "/#why-us" },
+  { label: "Packages", href: "/#packages" },
+  { label: "Car & Driver", href: "/car-and-driver" },
+  { label: "Experiences", href: "/#experiences" },
+  { label: "Team", href: "/#team" },
+  { label: "Plan My Trip", href: "/#trip-builder" },
 ];
 
 export const HERO = {

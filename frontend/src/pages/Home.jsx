@@ -13,6 +13,7 @@ import TripBuilder from "@/components/site/TripBuilder";
 import FAQ from "@/components/site/FAQ";
 import Blog from "@/components/site/Blog";
 import Instagram from "@/components/site/Instagram";
+import CarAndDriver from "@/components/site/CarAndDriver";
 import Footer from "@/components/site/Footer";
 import FloatingWhatsapp from "@/components/site/FloatingWhatsapp";
 
@@ -55,6 +56,7 @@ export default function Home() {
       <WhyUs />
       <Packages />
       <WhyBookDirect />
+      <CarAndDriver />
       <Experiences />
       <Team />
       <Reviews />
