@@ -19,11 +19,11 @@ import Instagram from "@/components/site/Instagram";
 import Footer from "@/components/site/Footer";
 import FloatingWhatsapp from "@/components/site/FloatingWhatsapp";
 import SEO from "@/components/site/SEO";
-import { useContent } from "@/context/ContentContext";
+import useReveal from "@/hooks/useReveal";
 
 export default function Home() {
   const location = useLocation();
-  const { loading: cmsLoading } = useContent();
+  useReveal();
 
   useEffect(() => {
     if (location.hash) {
@@ -33,30 +33,11 @@ export default function Home() {
   }, [location]);
 
   useEffect(() => {
-    // Re-run after CMS settles so FAQ / Reviews / Services items (which
-    // only mount once `/api/cms` resolves) still get faded in.
-    const els = document.querySelectorAll(".reveal:not(.in)");
-    if (els.length === 0) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("in");
-            io.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.12 }
-    );
-    els.forEach((el) => {
-      io.observe(el);
-      // Fallback: if item is already in viewport at mount, reveal immediately
-      // (IntersectionObserver only fires on changes after registration).
-      const r = el.getBoundingClientRect();
-      if (r.top < window.innerHeight && r.bottom > 0) el.classList.add("in");
-    });
-    return () => io.disconnect();
-  }, [cmsLoading]);
+    if (location.hash) {
+      const el = document.querySelector(location.hash);
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth" }), 120);
+    }
+  }, [location]);
 
   return (
     <main className="relative bg-sand-50 text-[#111827]" data-testid="home-page">
