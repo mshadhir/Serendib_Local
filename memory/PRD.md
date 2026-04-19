@@ -67,10 +67,19 @@ V2 additions: package filter bar, day-by-day accordion, What's Included checklis
   - **Graceful no-op when `RESEND_API_KEY` empty** — logs a warning and returns; does not fail the request.
   - Activate by: 1) get key from resend.com, 2) paste into `RESEND_API_KEY` in `/app/backend/.env`, 3) `sudo supervisorctl restart backend`, 4) verify serendiblocal.com domain in Resend for deliverability.
 
+### V5 — 2026-02 (Car & Driver service)
+- New service — DIY trips with a chauffeur, airport-to-airport.
+- `/app/frontend/src/lib/carAndDriver.js` — data (pillars, 3 vehicle tiers, included list, 6 concierge services, 3 sample routes, 5 car-specific FAQ).
+- `/app/frontend/src/components/site/CarAndDriver.jsx` — home teaser section (between WhyBookDirect and Experiences).
+- `/app/frontend/src/pages/CarAndDriverPage.jsx` — full `/car-and-driver` route: hero + 4 pillars + 3 vehicle tiers ($65/$85/$110 per day) with enquire buttons + included-per-day list + concierge grid + 3 sample routes + FAQ + bottom CTA.
+- NAV updated with "Car & Driver" link; EN/DE/FR i18n keys added (`Car & Driver` / `Auto & Fahrer` / `Voiture & Chauffeur`).
+- NAV hash hrefs prefixed with `/` so home anchors resolve from any detail page.
+
 ## Testing
 - iteration_1.json — V2: 17/17 features passed.
 - iteration_2.json — V3: 26 new features + V2 regressions, backend 23 pytest cases passed.
 - iteration_3.json — V4: 19 new features + regressions, backend 33 pytest cases passed.
+- iteration_4.json — V5: 38 features (Car & Driver page + home section + nav i18n + all regressions).
 - Test credentials: `/app/memory/test_credentials.md` (admin password).
 
 ## Prioritised backlog
