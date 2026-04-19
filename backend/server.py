@@ -301,7 +301,8 @@ def verify_admin(authorization: str = Header(default=None)):
 
 
 def _stripe_client(request: Request) -> StripeCheckout:
-    api_key = os.environ.get('STRIPE_API_KEY')
+    # User-requested env var name; fall back to legacy name for backward compat.
+    api_key = os.environ.get('STRIPE_SECRET_KEY') or os.environ.get('STRIPE_API_KEY')
     if not api_key:
         raise HTTPException(status_code=500, detail="Stripe not configured")
     host = str(request.base_url).rstrip("/")
@@ -413,8 +414,8 @@ async def create_checkout(payload: CheckoutCreateRequest, request: Request):
     if not pkg:
         raise HTTPException(status_code=400, detail="Unknown package")
     origin = payload.origin_url.rstrip("/")
-    success_url = f"{origin}/deposit/{payload.package_slug}?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{origin}/deposit/{payload.package_slug}?cancelled=1"
+    success_url = f"{origin}/booking-confirmed?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin}/?booking_cancelled=1&package={payload.package_slug}"
     metadata = {
         "package_slug": payload.package_slug,
         "package_title": str(pkg["title"]),
@@ -617,6 +618,18 @@ async def bookings_status(session_id: str, request: Request):
         logger.error(f"Stripe poll for booking failed: {e}")
 
     return booking
+
+
+@api_router.get("/config/stripe")
+async def stripe_config():
+    """Public Stripe configuration — returns the publishable key so the
+    frontend can (optionally) render Stripe Elements / Payment Element in
+    future. The current booking flow uses hosted Checkout and does not
+    require this value, but exposing it keeps us future-ready."""
+    pk = os.environ.get("STRIPE_PUBLISHABLE_KEY")
+    if not pk:
+        raise HTTPException(status_code=500, detail="Stripe publishable key not configured")
+    return {"publishable_key": pk}
 
 
 @api_router.post("/webhook/stripe")

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import Navbar from "@/components/site/Navbar";
 import Hero from "@/components/site/Hero";
 import TrustBar from "@/components/site/TrustBar";
@@ -23,7 +24,24 @@ import useReveal from "@/hooks/useReveal";
 
 export default function Home() {
   const location = useLocation();
+  const navigate = useNavigate();
   useReveal();
+
+  // Surface a Stripe-cancel error message when the user is bounced back
+  // from Checkout via `/?booking_cancelled=1`.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("booking_cancelled") === "1") {
+      toast.error("Payment cancelled", {
+        description: "No charge was made. You can try again or reach out on WhatsApp if you ran into trouble.",
+      });
+      // Clean the URL so refreshes don't re-fire the toast.
+      params.delete("booking_cancelled");
+      params.delete("package");
+      const qs = params.toString();
+      navigate({ pathname: "/", search: qs ? `?${qs}` : "", hash: location.hash }, { replace: true });
+    }
+  }, [location.search, location.hash, navigate]);
 
   useEffect(() => {
     if (location.hash) {
