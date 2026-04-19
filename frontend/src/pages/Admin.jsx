@@ -326,7 +326,11 @@ export default function Admin() {
                           <span className="text-[11px] text-[#4B5563]">—</span>
                         )}
                       </td>
-                      <td className="px-5 py-4 text-[#4B5563] max-w-[180px] truncate">{l.travel_month || l.message || "—"}</td>
+                      <td className="px-5 py-4 text-[#4B5563] max-w-[200px] truncate">
+                        {l.travel_flexible ? "Flexible" : (l.travel_start && l.travel_end)
+                          ? `${l.travel_start} → ${l.travel_end}`
+                          : (l.travel_start || l.travel_end || l.travel_month || l.message || "—")}
+                      </td>
                       <td className="px-5 py-4 text-[#4B5563] whitespace-nowrap">{formatDate(l.created_at)}</td>
                     </tr>
                   ))}

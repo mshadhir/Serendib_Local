@@ -77,7 +77,9 @@ export default function TripBuilder() {
   const [days, setDays] = useState(10);
   const [travellers, setTravellers] = useState(2);
   const [vehicleId, setVehicleId] = useState("suv");
-  const [travelMonth, setTravelMonth] = useState("");
+  const [travelStart, setTravelStart] = useState("");
+  const [travelEnd, setTravelEnd] = useState("");
+  const [travelFlexible, setTravelFlexible] = useState(false);
   const [locations, setLocations] = useState(["sigiriya", "kandy", "ella"]);
   const [experiences, setExperiences] = useState(["rice-curry", "safari"]);
   const [stayHelp, setStayHelp] = useState("yes"); // 'yes' | 'no' | null
@@ -107,9 +109,20 @@ export default function TripBuilder() {
   const toggleStayStyle = (slug) =>
     setStayStyles((prev) => (prev.includes(slug) ? prev.filter((x) => x !== slug) : [...prev, slug]));
 
+  const travelWindowLabel = travelFlexible
+    ? "Flexible"
+    : travelStart && travelEnd
+      ? `${travelStart} → ${travelEnd}`
+      : travelStart
+        ? `from ${travelStart}`
+        : travelEnd
+          ? `until ${travelEnd}`
+          : "";
+
   const resetAll = () => {
     setStep(1); setDays(10); setTravellers(2); setVehicleId("suv");
-    setTravelMonth(""); setLocations([]); setExperiences([]);
+    setTravelStart(""); setTravelEnd(""); setTravelFlexible(false);
+    setLocations([]); setExperiences([]);
     setStayHelp("yes"); setStayBudget("mid"); setStayStyles([]); setStayNotes("");
     setForm({ name: "", email: "", message: "" });
   };
@@ -130,7 +143,7 @@ export default function TripBuilder() {
       `Days: ${days}`,
       `Travellers: ${travellers}`,
       `Vehicle: ${vehicle.label} (${vehicle.seats})`,
-      `Travel month: ${travelMonth || "flexible"}`,
+      `Travel dates: ${travelWindowLabel || "not set"}`,
       `Stops: ${locationNames().join(", ") || "—"}`,
       `Experiences: ${experienceLabels().join(", ") || "—"}`,
       `Accommodation help: ${stayHelp === "yes" ? "Yes please" : "No — I'll book my own"}`,
@@ -159,7 +172,10 @@ export default function TripBuilder() {
         days: Number(days) || 7,
         travellers: Number(travellers) || 2,
         vehicle: vehicle.label,
-        travel_month: travelMonth || null,
+        travel_month: travelWindowLabel || null,
+        travel_start: travelFlexible ? null : (travelStart || null),
+        travel_end: travelFlexible ? null : (travelEnd || null),
+        travel_flexible: travelFlexible,
         locations,
         interests: experiences,
         accommodation_help: stayHelp === "yes",
@@ -316,13 +332,47 @@ export default function TripBuilder() {
                     <label className="block text-[11px] font-semibold uppercase tracking-[0.22em] text-clay-500 mb-3">
                       When are you thinking?
                     </label>
-                    <input
-                      value={travelMonth}
-                      onChange={(e) => setTravelMonth(e.target.value)}
-                      placeholder="e.g. Feb 2026 · flexible"
-                      data-testid="tb-travel-month"
-                      className="w-full rounded-lg bg-sand-50 border border-sand-200 focus:border-jungle-700 outline-none px-4 py-3 text-[#111827]"
-                    />
+                    <div className="grid grid-cols-2 gap-2" data-testid="tb-travel-dates">
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-wider text-[#4B5563] mb-1">Arrival</span>
+                        <input
+                          type="date"
+                          value={travelStart}
+                          onChange={(e) => setTravelStart(e.target.value)}
+                          disabled={travelFlexible}
+                          min={new Date().toISOString().slice(0, 10)}
+                          data-testid="tb-travel-start"
+                          className="w-full rounded-lg bg-sand-50 border border-sand-200 focus:border-jungle-700 outline-none px-3 py-2.5 text-[#111827] text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <span className="block text-[10px] uppercase tracking-wider text-[#4B5563] mb-1">Departure</span>
+                        <input
+                          type="date"
+                          value={travelEnd}
+                          onChange={(e) => setTravelEnd(e.target.value)}
+                          disabled={travelFlexible}
+                          min={travelStart || new Date().toISOString().slice(0, 10)}
+                          data-testid="tb-travel-end"
+                          className="w-full rounded-lg bg-sand-50 border border-sand-200 focus:border-jungle-700 outline-none px-3 py-2.5 text-[#111827] text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+                    <label className="mt-3 flex items-center gap-2 cursor-pointer select-none" data-testid="tb-travel-flexible-row">
+                      <input
+                        type="checkbox"
+                        checked={travelFlexible}
+                        onChange={(e) => {
+                          setTravelFlexible(e.target.checked);
+                          if (e.target.checked) { setTravelStart(""); setTravelEnd(""); }
+                        }}
+                        data-testid="tb-travel-flexible"
+                        className="h-4 w-4 rounded border-sand-200 text-jungle-700 focus:ring-jungle-700"
+                      />
+                      <span className="text-[13px] text-[#4B5563]">
+                        My dates are flexible — suggest the best time for this trip
+                      </span>
+                    </label>
                   </div>
                 </div>
 
@@ -750,10 +800,10 @@ export default function TripBuilder() {
                   </span>
                   <span className="font-medium">{vehicle.label}</span>
                 </div>
-                {travelMonth && (
+                {travelWindowLabel && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sand-50/70">Travel month</span>
-                    <span className="font-medium">{travelMonth}</span>
+                    <span className="text-sand-50/70">Travel window</span>
+                    <span className="font-medium">{travelWindowLabel}</span>
                   </div>
                 )}
               </div>

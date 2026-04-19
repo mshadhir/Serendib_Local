@@ -69,6 +69,9 @@ class TripInquiryCreate(BaseModel):
     vehicle: Optional[str] = Field(default=None, max_length=40)
     travellers: Optional[int] = Field(default=None, ge=1, le=30)
     travel_month: Optional[str] = Field(default=None, max_length=60)
+    travel_start: Optional[date] = Field(default=None)
+    travel_end: Optional[date] = Field(default=None)
+    travel_flexible: Optional[bool] = Field(default=None)
     accommodation_help: Optional[bool] = Field(default=None)
     accommodation_budget: Optional[str] = Field(default=None, max_length=40)
     accommodation_styles: List[str] = Field(default_factory=list)
@@ -87,6 +90,9 @@ class TripInquiry(BaseModel):
     vehicle: Optional[str] = None
     travellers: Optional[int] = None
     travel_month: Optional[str] = None
+    travel_start: Optional[date] = None
+    travel_end: Optional[date] = None
+    travel_flexible: Optional[bool] = None
     accommodation_help: Optional[bool] = None
     accommodation_budget: Optional[str] = None
     accommodation_styles: List[str] = Field(default_factory=list)
@@ -332,6 +338,9 @@ async def create_trip_inquiry(payload: TripInquiryCreate):
     inquiry = TripInquiry(**payload.model_dump())
     doc = inquiry.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
+    for _k in ('travel_start', 'travel_end'):
+        if doc.get(_k) is not None:
+            doc[_k] = doc[_k].isoformat()
     await db.trip_inquiries.insert_one(doc)
     asyncio.create_task(_send_new_lead_email(inquiry))
     return inquiry
