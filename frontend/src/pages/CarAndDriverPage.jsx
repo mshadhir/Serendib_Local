@@ -9,6 +9,7 @@ import {
 import Navbar from "@/components/site/Navbar";
 import Footer from "@/components/site/Footer";
 import FloatingWhatsapp from "@/components/site/FloatingWhatsapp";
+import InstantPriceWidget from "@/components/site/InstantPriceWidget";
 import {
   CAR_AND_DRIVER_HERO, PILLARS, VEHICLES, INCLUDED_PER_DAY,
   CONCIERGE_SERVICES, SAMPLE_ROUTES, CAR_FAQ,
@@ -43,40 +44,46 @@ export default function CarAndDriverPage() {
           </Link>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-24 pb-20 min-h-[60svh] flex flex-col justify-end">
-          <p className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.28em] text-clay-500 mb-5">
-            {CAR_AND_DRIVER_HERO.eyebrow}
-          </p>
-          <h1 className="font-display text-white text-5xl sm:text-6xl lg:text-[5.75rem] leading-[0.95] tracking-tight max-w-4xl">
-            {CAR_AND_DRIVER_HERO.title}
-            <span className="block italic text-sand-50/85">We'll handle the rest.</span>
-          </h1>
-          <p className="mt-6 max-w-2xl text-white/85 text-lg">
-            {CAR_AND_DRIVER_HERO.sub}
-          </p>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-24 pb-20 min-h-[60svh] grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-end">
+          <div className="lg:col-span-7">
+            <p className="text-[11px] md:text-xs font-semibold uppercase tracking-[0.28em] text-clay-500 mb-5">
+              {CAR_AND_DRIVER_HERO.eyebrow}
+            </p>
+            <h1 className="font-display text-white text-5xl sm:text-6xl lg:text-[5.25rem] leading-[0.95] tracking-tight">
+              {CAR_AND_DRIVER_HERO.title}
+              <span className="block italic text-sand-50/85">We'll handle the rest.</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-white/85 text-lg">
+              {CAR_AND_DRIVER_HERO.sub}
+            </p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-6 text-sand-50/80 text-sm">
-            <span className="inline-flex items-center gap-2"><Plane className="h-4 w-4 text-clay-500" /> Airport ↔ airport</span>
-            <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-clay-500" /> SLTDA-vetted drivers</span>
-            <span className="inline-flex items-center gap-2"><Sparkles className="h-4 w-4 text-clay-500" /> From USD 65/day, all-in</span>
+            <div className="mt-8 flex flex-wrap items-center gap-6 text-sand-50/80 text-sm">
+              <span className="inline-flex items-center gap-2"><Plane className="h-4 w-4 text-clay-500" /> Airport ↔ airport</span>
+              <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-clay-500" /> SLTDA-vetted drivers</span>
+              <span className="inline-flex items-center gap-2"><Sparkles className="h-4 w-4 text-clay-500" /> From USD 65/day, all-in</span>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a
+                href={WHATSAPP_LINK("Hi! I'd like a private car + driver in Sri Lanka. Can you send me a quote?")}
+                target="_blank"
+                rel="noreferrer"
+                data-testid="car-hero-whatsapp"
+                className="inline-flex items-center gap-2 rounded-full bg-clay-500 hover:bg-clay-600 text-white px-7 py-4 text-sm font-medium transition-all"
+              >
+                <MessageCircle className="h-4 w-4" /> Get a quote on WhatsApp
+              </a>
+              <a
+                href="#vehicles"
+                className="inline-flex items-center gap-2 rounded-full border border-white/30 hover:border-white text-white/95 px-7 py-4 text-sm font-medium backdrop-blur-sm transition-all"
+              >
+                See vehicles & prices
+              </a>
+            </div>
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-4">
-            <a
-              href={WHATSAPP_LINK("Hi! I'd like a private car + driver in Sri Lanka. Can you send me a quote?")}
-              target="_blank"
-              rel="noreferrer"
-              data-testid="car-hero-whatsapp"
-              className="inline-flex items-center gap-2 rounded-full bg-clay-500 hover:bg-clay-600 text-white px-7 py-4 text-sm font-medium transition-all"
-            >
-              <MessageCircle className="h-4 w-4" /> Get a quote on WhatsApp
-            </a>
-            <a
-              href="#vehicles"
-              className="inline-flex items-center gap-2 rounded-full border border-white/30 hover:border-white text-white/95 px-7 py-4 text-sm font-medium backdrop-blur-sm transition-all"
-            >
-              See vehicles & prices
-            </a>
+          <div className="lg:col-span-5">
+            <InstantPriceWidget variant="glass" />
           </div>
         </div>
       </section>
