@@ -41,22 +41,36 @@ V2 additions: package filter bar, day-by-day accordion, What's Included checklis
 - "Design your own journey" Custom Plan card.
 - Font upgrade: Libre Baskerville + Outfit.
 
+### V3 — 2026-02 (P2 items)
+- **Admin dashboard** at `/admin`:
+  - Backend: `POST /api/admin/login` + `GET /api/admin/leads` (Bearer auth via `ADMIN_TOKEN` env var).
+  - Frontend: password screen → stats cards (total / last-7-days / avg-days / top-interest) + searchable leads table + CSV export + logout.
+  - Admin password in `/app/memory/test_credentials.md`.
+- **EN / DE / FR language switcher**:
+  - `LangContext` + `useLang()` + `t(key)`, persisted via `localStorage.sl_lang`.
+  - `/app/frontend/src/lib/i18n.js` — ~50-key dictionary for EN/DE/FR.
+  - Globe dropdown in Navbar (desktop + mobile).
+  - Translated surfaces: Nav, Hero, TripBuilder, FAQ, Footer, FloatingWhatsapp, Instagram section. Package itineraries + blog stay EN (noted for client).
+- **Instagram embed**: new 8-tile grid section above Footer linking to @serendiblocal. **MOCKED** — uses static images from EXPERIENCES data; swap to Instagram Graph API when credentials are available.
+
 ## Testing
-- iteration_1.json — 17/17 V2 features passed, backend verified.
-- test credentials: N/A (no auth).
+- iteration_1.json — V2: 17/17 features passed.
+- iteration_2.json — V3: 26 new features + V2 regressions, backend 23 pytest cases passed.
+- Test credentials: `/app/memory/test_credentials.md` (admin password).
 
 ## Prioritised backlog
 ### P1
 - Real WhatsApp number + client-provided team photos & bios.
+- Swap Instagram mock for real Instagram Graph API once client supplies credentials.
 - Email forwarding (Resend/SendGrid) of new trip inquiries to `hello@serendiblocal.com`.
 - Replace placeholder blog cards with actual MDX articles for SEO.
 - Live exchange-rate fetch (currently hard-coded per-package figures).
+- Translate package itineraries + blog into DE/FR (currently EN only).
 
 ### P2
 - CMS for packages / blog (so non-devs can edit content).
-- Multilingual (DE/FR) — big portion of EU market.
-- Gallery / Instagram feed embed.
-- Admin dashboard to view leads.
+- Admin dashboard: lead status pipeline (new / replied / booked / lost), notes.
+- Gallery page (dedicated).
 
 ### P3
 - Availability calendar + per-date pricing.
