@@ -413,6 +413,20 @@ export default function TripBuilder() {
                     );
                   })}
                 </div>
+
+                <div
+                  data-testid="tb-experiences-note"
+                  className="mt-6 rounded-xl border border-clay-500/30 bg-clay-500/10 px-5 py-4 flex items-start gap-3"
+                >
+                  <Sparkles className="h-4 w-4 text-clay-500 mt-0.5 flex-none" />
+                  <p className="text-[13px] text-[#4B5563] leading-relaxed">
+                    <span className="text-[#111827] font-medium">Just a heads-up:</span>{" "}
+                    we'll look for these experiences along your route and send you a
+                    short-list with prices, timings and local options. You pick the
+                    ones that match your budget and your vibe — skip the rest, no
+                    pressure.
+                  </p>
+                </div>
               </div>
             )}
 
