@@ -9,7 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 
 from emergentintegrations.payments.stripe.checkout import (
     StripeCheckout,
@@ -21,7 +21,7 @@ import resend
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+# MongoDB
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
@@ -36,17 +36,15 @@ logging.basicConfig(
 )
 
 
-# ----- Server-side fixed deposit prices (10% of tour price, in USD). -----
-# Source of truth — NEVER trust amounts from the frontend.
+# ---------- Deposit packages for /deposit/:slug (legacy) ----------
 DEPOSIT_PACKAGES: Dict[str, Dict[str, float | str]] = {
-    "real-sri-lanka":   {"title": "The Real Sri Lanka", "amount": 129.0, "currency": "usd"},
-    "hidden-lanka":     {"title": "Hidden Lanka",        "amount": 159.0, "currency": "usd"},
-    "slow-and-savour":  {"title": "Slow & Savour",       "amount": 118.0, "currency": "usd"},
-    "quick-escape":     {"title": "Quick Escape",        "amount":  69.0, "currency": "usd"},
+    "real-sri-lanka":   {"title": "The Real Sri Lanka", "amount":  98.0, "currency": "usd"},
+    "hidden-lanka":     {"title": "Hidden Lanka",        "amount":  85.0, "currency": "usd"},
+    "slow-and-savour":  {"title": "Slow & Savour",       "amount":  78.0, "currency": "usd"},
 }
 
 
-# ----- Models -----
+# ---------- Models ----------
 class StatusCheck(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -103,68 +101,167 @@ class PaymentStatusResponse(BaseModel):
     package_title: Optional[str] = None
 
 
-# ----- Email helper (Resend) -----
+class BookingCreate(BaseModel):
+    package_slug: str = Field(min_length=1, max_length=100)
+    package_name: str = Field(min_length=1, max_length=200)
+    arrival_date: str = Field(min_length=10, max_length=10)     # YYYY-MM-DD
+    departure_date: str = Field(min_length=10, max_length=10)
+    num_travellers: int = Field(ge=1, le=12)
+    price_per_person: float = Field(ge=0)
+    total_price: float = Field(ge=0)
+    deposit_amount: float = Field(ge=0)
+    guest_name: str = Field(min_length=1, max_length=120)
+    guest_email: EmailStr
+    guest_whatsapp: str = Field(min_length=4, max_length=30)
+    guest_country: str = Field(min_length=1, max_length=60)
+    special_requests: Optional[str] = Field(default=None, max_length=2000)
+    origin_url: str = Field(min_length=1, max_length=500)
+
+
+class BookingCheckoutResponse(BaseModel):
+    url: str
+    session_id: str
+    booking_id: str
+
+
+class BookingStatusUpdate(BaseModel):
+    status: str
+
+
+# ---------- Email helpers (Resend) ----------
 def _resend_enabled() -> bool:
     return bool(os.environ.get("RESEND_API_KEY"))
 
 
-async def _send_new_lead_email(inquiry: TripInquiry) -> None:
-    """Fire a notification email. No-op if RESEND_API_KEY is empty."""
+async def _resend_send(params: dict) -> None:
     if not _resend_enabled():
-        logger.info("RESEND_API_KEY not set — skipping lead notification email.")
+        logger.info("RESEND_API_KEY not set — skipping email.")
         return
-
     resend.api_key = os.environ["RESEND_API_KEY"]
-    sender = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
-    recipient = os.environ.get("NOTIFY_EMAIL", "hello@serendiblocal.com")
+    try:
+        await asyncio.to_thread(resend.Emails.send, params)
+    except Exception as e:
+        logger.error(f"Resend failed: {e}")
 
+
+async def _send_new_lead_email(inquiry: TripInquiry) -> None:
+    sender = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+    recipient = os.environ.get("NOTIFY_EMAIL", os.environ.get("ADMIN_EMAIL", "hello@serendiblocal.com"))
     interests = ", ".join(inquiry.interests) if inquiry.interests else "—"
     msg_html = (inquiry.message or "—").replace("\n", "<br/>")
-
     html = f"""
     <div style="font-family:Helvetica,Arial,sans-serif;background:#f9f6f0;padding:40px 20px;color:#111827;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5dfd3;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;border:1px solid #e5dfd3;">
         <tr><td style="background:#1a362d;color:#f9f6f0;padding:28px 32px;">
-          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#c05a45;margin-bottom:6px;">New trip inquiry</div>
-          <div style="font-family:Georgia,serif;font-size:28px;line-height:1.15;">Someone wants to visit Sri Lanka.</div>
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#c05a45;">New trip inquiry</div>
+          <div style="font-family:Georgia,serif;font-size:28px;">Someone wants to visit Sri Lanka.</div>
         </td></tr>
-        <tr><td style="padding:28px 32px;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
-            <tr><td style="padding:6px 0;color:#4b5563;width:110px;">Name</td><td style="padding:6px 0;"><strong>{inquiry.name}</strong></td></tr>
-            <tr><td style="padding:6px 0;color:#4b5563;">Email</td><td style="padding:6px 0;"><a href="mailto:{inquiry.email}" style="color:#1a362d;">{inquiry.email}</a></td></tr>
-            <tr><td style="padding:6px 0;color:#4b5563;">Days</td><td style="padding:6px 0;">{inquiry.days}</td></tr>
-            <tr><td style="padding:6px 0;color:#4b5563;vertical-align:top;">Interests</td><td style="padding:6px 0;">{interests}</td></tr>
-            <tr><td style="padding:6px 0;color:#4b5563;vertical-align:top;">When / notes</td><td style="padding:6px 0;">{msg_html}</td></tr>
-            <tr><td style="padding:6px 0;color:#4b5563;">Received</td><td style="padding:6px 0;">{inquiry.created_at.isoformat()}</td></tr>
-          </table>
-          <div style="margin-top:24px;">
-            <a href="mailto:{inquiry.email}" style="display:inline-block;background:#c05a45;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:999px;font-size:14px;">Reply to {inquiry.name}</a>
-          </div>
-        </td></tr>
-        <tr><td style="background:#f2ede4;color:#4b5563;font-size:12px;padding:16px 32px;text-align:center;">
-          Serendib Local · auto-notification from the website
+        <tr><td style="padding:28px 32px;font-size:15px;">
+          <p><strong>{inquiry.name}</strong> &middot; <a href="mailto:{inquiry.email}">{inquiry.email}</a></p>
+          <p>Days: {inquiry.days}<br/>Interests: {interests}<br/>Notes: {msg_html}</p>
         </td></tr>
       </table>
-    </div>
-    """
-
-    try:
-        await asyncio.to_thread(
-            resend.Emails.send,
-            {
-                "from": sender,
-                "to": [recipient],
-                "subject": f"New Sri Lanka trip inquiry — {inquiry.name} ({inquiry.days} days)",
-                "reply_to": inquiry.email,
-                "html": html,
-            },
-        )
-        logger.info(f"Sent lead notification for {inquiry.email} → {recipient}")
-    except Exception as e:
-        logger.error(f"Resend email failed: {e}")
+    </div>"""
+    await _resend_send({
+        "from": sender, "to": [recipient],
+        "subject": f"New Sri Lanka trip inquiry — {inquiry.name} ({inquiry.days} days)",
+        "reply_to": inquiry.email, "html": html,
+    })
 
 
-# ----- Auth dep -----
+def _format_money(amount: float) -> str:
+    return f"${int(round(amount)):,}"
+
+
+async def _send_booking_emails(booking: dict) -> None:
+    """Send admin + guest confirmation emails after successful deposit."""
+    sender = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+    admin_email = os.environ.get("ADMIN_EMAIL", "hello@serendiblocal.com")
+    guest_email = booking.get("guest_email")
+    balance_due = float(booking.get("total_price", 0)) - float(booking.get("deposit_amount", 0))
+
+    common = {
+        "name": booking.get("guest_name"),
+        "package": booking.get("package_name"),
+        "arrival": booking.get("arrival_date"),
+        "departure": booking.get("departure_date"),
+        "travellers": booking.get("num_travellers"),
+        "total": _format_money(booking.get("total_price", 0)),
+        "deposit": _format_money(booking.get("deposit_amount", 0)),
+        "balance": _format_money(balance_due),
+        "whatsapp": booking.get("guest_whatsapp"),
+        "requests": (booking.get("special_requests") or "—").replace("\n", "<br/>"),
+        "booking_id": booking.get("booking_id"),
+    }
+
+    # --- Admin email ---
+    admin_html = f"""
+    <div style="font-family:Helvetica,Arial,sans-serif;background:#f9f6f0;padding:40px 20px;color:#111827;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;border:1px solid #e5dfd3;">
+        <tr><td style="background:#1a362d;color:#f9f6f0;padding:28px 32px;">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#c05a45;">New booking · deposit paid</div>
+          <div style="font-family:Georgia,serif;font-size:28px;">{common['name']} · {common['package']}</div>
+          <div style="font-size:14px;color:#f9f6f0;opacity:.85;margin-top:6px;">Arrives {common['arrival']}</div>
+        </td></tr>
+        <tr><td style="padding:28px 32px;font-size:15px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="font-size:15px;">
+            <tr><td style="padding:6px 0;color:#4b5563;width:140px;">Guest</td><td style="padding:6px 0;"><strong>{common['name']}</strong></td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">Email</td><td style="padding:6px 0;"><a href="mailto:{guest_email}">{guest_email}</a></td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">WhatsApp</td><td style="padding:6px 0;">{common['whatsapp']}</td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">From</td><td style="padding:6px 0;">{booking.get('guest_country','')}</td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">Package</td><td style="padding:6px 0;">{common['package']}</td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">Arrival → Departure</td><td style="padding:6px 0;">{common['arrival']} → {common['departure']}</td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">Travellers</td><td style="padding:6px 0;">{common['travellers']}</td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">Total</td><td style="padding:6px 0;">{common['total']}</td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">Deposit paid</td><td style="padding:6px 0;color:#1a362d;"><strong>{common['deposit']}</strong></td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;">Balance due</td><td style="padding:6px 0;">{common['balance']}</td></tr>
+            <tr><td style="padding:6px 0;color:#4b5563;vertical-align:top;">Requests</td><td style="padding:6px 0;">{common['requests']}</td></tr>
+          </table>
+          <div style="margin-top:24px;">
+            <a href="/admin" style="display:inline-block;background:#c05a45;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:999px;font-size:14px;">Open admin dashboard</a>
+          </div>
+        </td></tr>
+      </table>
+    </div>"""
+    await _resend_send({
+        "from": sender, "to": [admin_email],
+        "subject": f"NEW BOOKING — {common['name']} — {common['package']} — {common['arrival']}",
+        "reply_to": guest_email, "html": admin_html,
+    })
+
+    # --- Guest email ---
+    guest_html = f"""
+    <div style="font-family:Helvetica,Arial,sans-serif;background:#f9f6f0;padding:40px 20px;color:#111827;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;border:1px solid #e5dfd3;">
+        <tr><td style="background:#1a362d;color:#f9f6f0;padding:28px 32px;">
+          <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#c05a45;">Booking confirmed</div>
+          <div style="font-family:Georgia,serif;font-size:28px;">Your dates are locked, {common['name'].split(' ')[0]}. 🎉</div>
+        </td></tr>
+        <tr><td style="padding:28px 32px;font-size:15px;line-height:1.55;">
+          <p>Your deposit of <strong>{common['deposit']}</strong> has been received and your dates are locked in.</p>
+          <p><strong>Booking summary</strong><br/>
+          Package: {common['package']}<br/>
+          Arrival: {common['arrival']}<br/>
+          Departure: {common['departure']}<br/>
+          Travellers: {common['travellers']}<br/>
+          Total trip price: {common['total']}<br/>
+          Deposit paid: {common['deposit']}<br/>
+          Balance due: <strong>{common['balance']}</strong> (due 30 days before arrival)
+          </p>
+          <p>We will WhatsApp you at <strong>{common['whatsapp']}</strong> within 2 hours to introduce ourselves and start planning every detail of your trip.</p>
+          <p>Can't wait to show you Sri Lanka.<br/>— The Serendib Local Team<br/><a href="mailto:{admin_email}">{admin_email}</a></p>
+        </td></tr>
+      </table>
+    </div>"""
+    if guest_email:
+        await _resend_send({
+            "from": sender, "to": [guest_email],
+            "subject": f"Your Serendib Local booking is confirmed — {common['arrival']}",
+            "reply_to": admin_email, "html": guest_html,
+        })
+
+
+# ---------- Auth dep ----------
 def verify_admin(authorization: str = Header(default=None)):
     expected = os.environ.get('ADMIN_TOKEN')
     if not expected:
@@ -174,7 +271,16 @@ def verify_admin(authorization: str = Header(default=None)):
     return True
 
 
-# ----- Routes -----
+def _stripe_client(request: Request) -> StripeCheckout:
+    api_key = os.environ.get('STRIPE_API_KEY')
+    if not api_key:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    host = str(request.base_url).rstrip("/")
+    webhook_url = f"{host}/api/webhook/stripe"
+    return StripeCheckout(api_key=api_key, webhook_url=webhook_url)
+
+
+# ---------- Routes ----------
 @api_router.get("/")
 async def root():
     return {"message": "Serendib Local API"}
@@ -204,7 +310,6 @@ async def create_trip_inquiry(payload: TripInquiryCreate):
     doc = inquiry.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     await db.trip_inquiries.insert_one(doc)
-    # fire-and-forget email notification
     asyncio.create_task(_send_new_lead_email(inquiry))
     return inquiry
 
@@ -220,7 +325,7 @@ async def list_trip_inquiries(limit: int = 100):
     return rows
 
 
-# ----- Admin -----
+# ---------- Admin ----------
 @api_router.post("/admin/login")
 async def admin_login(payload: AdminLoginPayload):
     expected = os.environ.get('ADMIN_TOKEN')
@@ -240,23 +345,34 @@ async def admin_list_leads(limit: int = 500, _: bool = Depends(verify_admin)):
     return rows
 
 
-# ----- Payments (Stripe) -----
-def _stripe_client(request: Request) -> StripeCheckout:
-    api_key = os.environ.get('STRIPE_API_KEY')
-    if not api_key:
-        raise HTTPException(status_code=500, detail="Stripe not configured")
-    host = str(request.base_url).rstrip("/")
-    webhook_url = f"{host}/api/webhook/stripe"
-    return StripeCheckout(api_key=api_key, webhook_url=webhook_url)
+@api_router.get("/admin/bookings")
+async def admin_list_bookings(_: bool = Depends(verify_admin)):
+    # Only show real bookings (deposit_paid and beyond)
+    rows = await db.bookings.find(
+        {"payment_status": "paid"},
+        {"_id": 0},
+    ).sort("created_at", -1).to_list(1000)
+    return rows
 
 
+@api_router.patch("/admin/bookings/{booking_id}")
+async def admin_update_booking_status(booking_id: str, payload: BookingStatusUpdate, _: bool = Depends(verify_admin)):
+    allowed = {"deposit_paid", "trip_confirmed", "in_progress", "completed", "cancelled"}
+    if payload.status not in allowed:
+        raise HTTPException(status_code=400, detail=f"status must be one of {sorted(allowed)}")
+    res = await db.bookings.update_one(
+        {"booking_id": booking_id},
+        {"$set": {"status": payload.status, "updated_at": datetime.now(timezone.utc).isoformat()}},
+    )
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return {"status": "ok"}
+
+
+# ---------- Legacy single-package deposit (kept for backward compat) ----------
 @api_router.get("/payments/packages")
 async def list_deposit_packages():
-    """Public list of deposit packages available for checkout (server-side authoritative)."""
-    return [
-        {"slug": slug, **data}
-        for slug, data in DEPOSIT_PACKAGES.items()
-    ]
+    return [{"slug": slug, **data} for slug, data in DEPOSIT_PACKAGES.items()]
 
 
 @api_router.post("/payments/checkout", response_model=CheckoutCreateResponse)
@@ -264,11 +380,9 @@ async def create_checkout(payload: CheckoutCreateRequest, request: Request):
     pkg = DEPOSIT_PACKAGES.get(payload.package_slug)
     if not pkg:
         raise HTTPException(status_code=400, detail="Unknown package")
-
     origin = payload.origin_url.rstrip("/")
     success_url = f"{origin}/deposit/{payload.package_slug}?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{origin}/deposit/{payload.package_slug}?cancelled=1"
-
     metadata = {
         "package_slug": payload.package_slug,
         "package_title": str(pkg["title"]),
@@ -289,7 +403,6 @@ async def create_checkout(payload: CheckoutCreateRequest, request: Request):
     )
     session = await stripe.create_checkout_session(req)
 
-    # Create pending transaction record
     tx = {
         "id": str(uuid.uuid4()),
         "session_id": session.session_id,
@@ -306,7 +419,6 @@ async def create_checkout(payload: CheckoutCreateRequest, request: Request):
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.payment_transactions.insert_one(tx)
-
     return CheckoutCreateResponse(url=session.url, session_id=session.session_id)
 
 
@@ -315,8 +427,6 @@ async def get_payment_status(session_id: str, request: Request):
     tx = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
-
-    # If already terminal, return cached
     if tx.get("payment_status") == "paid" or tx.get("status") == "expired":
         return PaymentStatusResponse(
             session_id=session_id,
@@ -327,16 +437,31 @@ async def get_payment_status(session_id: str, request: Request):
             package_slug=tx.get("package_slug"),
             package_title=tx.get("package_title"),
         )
-
-    stripe = _stripe_client(request)
     try:
+        stripe = _stripe_client(request)
         status = await stripe.get_checkout_status(session_id)
-    except Exception as e:
-        # Stripe session may have expired or be invalid - return cached DB state
-        logger.warning(f"Stripe session lookup failed for {session_id}: {e}")
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {
+                "status": status.status,
+                "payment_status": status.payment_status,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }},
+        )
         return PaymentStatusResponse(
             session_id=session_id,
-            status=tx.get("status", "pending"),
+            status=status.status,
+            payment_status=status.payment_status,
+            amount_total=float(status.amount_total) / 100.0 if status.amount_total else float(tx.get("amount", 0.0)),
+            currency=status.currency or str(tx.get("currency", "usd")),
+            package_slug=tx.get("package_slug"),
+            package_title=tx.get("package_title"),
+        )
+    except Exception as e:
+        logger.error(f"stripe status fetch failed: {e}")
+        return PaymentStatusResponse(
+            session_id=session_id,
+            status=tx.get("status", "unknown"),
             payment_status=tx.get("payment_status", "pending"),
             amount_total=float(tx.get("amount", 0.0)),
             currency=str(tx.get("currency", "usd")),
@@ -344,26 +469,120 @@ async def get_payment_status(session_id: str, request: Request):
             package_title=tx.get("package_title"),
         )
 
-    await db.payment_transactions.update_one(
-        {"session_id": session_id},
-        {
-            "$set": {
-                "status": status.status,
-                "payment_status": status.payment_status,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            }
-        },
+
+# ---------- NEW: Full booking flow ----------
+@api_router.post("/bookings/create-checkout", response_model=BookingCheckoutResponse)
+async def bookings_create_checkout(payload: BookingCreate, request: Request):
+    # Validate dates
+    try:
+        d1 = date.fromisoformat(payload.arrival_date)
+        d2 = date.fromisoformat(payload.departure_date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format (expected YYYY-MM-DD)")
+    num_days = (d2 - d1).days
+    if num_days < 1:
+        raise HTTPException(status_code=400, detail="Departure must be after arrival")
+
+    # Recompute totals server-side — never trust the frontend
+    total = round(float(payload.price_per_person) * int(payload.num_travellers), 2)
+    deposit = round(total * 0.10)
+    if deposit < 1:
+        raise HTTPException(status_code=400, detail="Deposit is too small")
+
+    origin = payload.origin_url.rstrip("/")
+    success_url = f"{origin}/booking-confirmed?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin}/?booking_cancelled=1"
+
+    metadata = {
+        "booking_type": "package_booking",
+        "package_slug": payload.package_slug,
+        "package_name": payload.package_name,
+        "guest_email": payload.guest_email,
+        "guest_whatsapp": payload.guest_whatsapp,
+        "arrival_date": payload.arrival_date,
+        "departure_date": payload.departure_date,
+        "num_travellers": str(payload.num_travellers),
+    }
+
+    stripe = _stripe_client(request)
+    req = CheckoutSessionRequest(
+        amount=float(deposit),
+        currency="usd",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata=metadata,
+    )
+    session = await stripe.create_checkout_session(req)
+
+    booking = {
+        "booking_id": str(uuid.uuid4()),
+        "session_id": session.session_id,
+        "package_slug": payload.package_slug,
+        "package_name": payload.package_name,
+        "arrival_date": payload.arrival_date,
+        "departure_date": payload.departure_date,
+        "num_days": num_days,
+        "num_travellers": int(payload.num_travellers),
+        "price_per_person": float(payload.price_per_person),
+        "total_price": total,
+        "deposit_amount": float(deposit),
+        "balance_due": round(total - deposit, 2),
+        "guest_name": payload.guest_name,
+        "guest_email": payload.guest_email,
+        "guest_whatsapp": payload.guest_whatsapp,
+        "guest_country": payload.guest_country,
+        "special_requests": payload.special_requests,
+        "stripe_payment_id": None,
+        "payment_status": "pending",
+        "status": "pending",
+        "emails_sent": False,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.bookings.insert_one(booking)
+
+    return BookingCheckoutResponse(
+        url=session.url, session_id=session.session_id, booking_id=booking["booking_id"]
     )
 
-    return PaymentStatusResponse(
-        session_id=session_id,
-        status=status.status,
-        payment_status=status.payment_status,
-        amount_total=float(status.amount_total) / 100.0 if status.amount_total else float(tx.get("amount", 0.0)),
-        currency=status.currency or str(tx.get("currency", "usd")),
-        package_slug=tx.get("package_slug"),
-        package_title=tx.get("package_title"),
-    )
+
+@api_router.get("/bookings/status/{session_id}")
+async def bookings_status(session_id: str, request: Request):
+    booking = await db.bookings.find_one({"session_id": session_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    if booking.get("payment_status") == "paid":
+        return booking
+
+    # Poll Stripe
+    try:
+        stripe = _stripe_client(request)
+        status = await stripe.get_checkout_status(session_id)
+        updates = {
+            "payment_status": status.payment_status,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        send_emails = False
+        if status.payment_status == "paid" and not booking.get("emails_sent"):
+            updates["status"] = "deposit_paid"
+            updates["stripe_payment_id"] = session_id
+            updates["emails_sent"] = True
+            send_emails = True
+        elif status.status == "expired":
+            updates["status"] = "expired"
+
+        await db.bookings.update_one({"session_id": session_id}, {"$set": updates})
+        booking.update(updates)
+
+        if send_emails:
+            asyncio.create_task(_send_booking_emails(booking))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Stripe poll for booking failed: {e}")
+
+    return booking
 
 
 @api_router.post("/webhook/stripe")
@@ -378,22 +597,38 @@ async def stripe_webhook(request: Request):
         raise HTTPException(status_code=400, detail="Invalid webhook")
 
     if event and getattr(event, "session_id", None):
+        sid = event.session_id
+        payment_status = getattr(event, "payment_status", "unknown")
+        # Update legacy deposit table
         await db.payment_transactions.update_one(
-            {"session_id": event.session_id},
-            {
-                "$set": {
-                    "payment_status": getattr(event, "payment_status", "unknown"),
-                    "status": "complete" if getattr(event, "payment_status", "") == "paid" else "processing",
-                    "updated_at": datetime.now(timezone.utc).isoformat(),
-                    "webhook_event_id": getattr(event, "event_id", None),
-                    "webhook_event_type": getattr(event, "event_type", None),
-                }
-            },
+            {"session_id": sid},
+            {"$set": {
+                "payment_status": payment_status,
+                "status": "complete" if payment_status == "paid" else "processing",
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }},
         )
+        # Update bookings table
+        booking = await db.bookings.find_one({"session_id": sid}, {"_id": 0})
+        if booking:
+            updates = {
+                "payment_status": payment_status,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+            send_emails = False
+            if payment_status == "paid" and not booking.get("emails_sent"):
+                updates["status"] = "deposit_paid"
+                updates["stripe_payment_id"] = sid
+                updates["emails_sent"] = True
+                send_emails = True
+            await db.bookings.update_one({"session_id": sid}, {"$set": updates})
+            if send_emails:
+                booking.update(updates)
+                asyncio.create_task(_send_booking_emails(booking))
     return {"received": True}
 
 
-# ----- App wiring -----
+# ---------- App wiring ----------
 app.include_router(api_router)
 
 app.add_middleware(

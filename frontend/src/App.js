@@ -1,10 +1,8 @@
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "@/pages/Home";
-import PackageDetail from "@/pages/PackageDetail";
 import Admin from "@/pages/Admin";
-import Deposit from "@/pages/Deposit";
-import CarAndDriverPage from "@/pages/CarAndDriverPage";
+import BookingConfirmed from "@/pages/BookingConfirmed";
 import { Toaster } from "@/components/ui/sonner";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { LangProvider } from "@/context/LangContext";
@@ -17,10 +15,8 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/packages/:slug" element={<PackageDetail />} />
               <Route path="/admin" element={<Admin />} />
-              <Route path="/deposit/:slug" element={<Deposit />} />
-              <Route path="/car-and-driver" element={<CarAndDriverPage />} />
+              <Route path="/booking-confirmed" element={<BookingConfirmed />} />
             </Routes>
           </BrowserRouter>
           <Toaster position="bottom-center" richColors />

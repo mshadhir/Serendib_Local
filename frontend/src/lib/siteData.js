@@ -1,11 +1,13 @@
 // Central copy + media for Serendib Local marketing site.
 
+const RAW_WA = process.env.REACT_APP_WHATSAPP_NUMBER || "+94771234567";
+
 export const BRAND = {
   name: "Serendib Local",
-  tagline: "Sri Lanka, the way locals live it.",
+  tagline: "Your Private Driver. Your Sri Lanka.",
   email: "hello@serendiblocal.com",
-  whatsappNumber: "+94771234567", // placeholder - swap with real number
-  whatsappDisplay: "+94 77 123 4567",
+  whatsappNumber: RAW_WA,
+  whatsappDisplay: RAW_WA,
   location: "Colombo, Sri Lanka",
 };
 
@@ -15,18 +17,17 @@ export const WHATSAPP_LINK = (text) =>
   )}`;
 
 export const NAV_LINKS = [
-  { label: "Why Us", href: "/#why-us" },
-  { label: "Packages", href: "/#packages" },
-  { label: "Car & Driver", href: "/car-and-driver" },
-  { label: "Experiences", href: "/#experiences" },
-  { label: "Team", href: "/#team" },
-  { label: "Plan My Trip", href: "/#trip-builder" },
+  { label: "Services", href: "/#services" },
+  { label: "Vehicles", href: "/#vehicles" },
+  { label: "Routes", href: "/#routes" },
+  { label: "Reviews", href: "/#reviews" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export const HERO = {
   eyebrow: "SLTDA Licensed · 5★ on TripAdvisor · Private Tours since 2019",
-  title: "Sri Lanka, the way locals live it.",
-  sub: "Private, slow-paced journeys designed by people who actually live here — skip the tourist traps, meet the island the way your cousin would show it to you.",
+  title: "Your Private Driver. Your Sri Lanka.",
+  sub: "No fixed packages. No group buses. Just you, a local driver who grew up here, and a private car that goes wherever you want — at your pace.",
   image:
     "https://images.unsplash.com/photo-1621358670052-d34a786a9385?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85",
 };

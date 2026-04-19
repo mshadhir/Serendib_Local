@@ -42,20 +42,20 @@ export default function Hero() {
 
         <div className="mt-10 flex flex-wrap gap-4">
           <a
-            href="#packages"
-            data-testid="hero-cta-packages"
+            href="#trip-builder"
+            data-testid="hero-cta-day-tour"
             className="group inline-flex items-center gap-2 rounded-full bg-clay-500 hover:bg-clay-600 text-white px-7 py-4 text-sm font-medium transition-all"
           >
-            {t("hero.ctaPackages")}
+            Book a Day Tour
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </a>
           <a
             href="#trip-builder"
-            data-testid="hero-cta-builder"
+            data-testid="hero-cta-road-trip"
             className="inline-flex items-center gap-2 rounded-full border border-white/30 hover:border-white/80 text-white/95 px-7 py-4 text-sm font-medium backdrop-blur-sm transition-all"
           >
             <Play className="h-4 w-4" />
-            {t("hero.ctaBuilder")}
+            Plan a Road Trip
           </a>
           <a
             href={WHATSAPP_LINK()}

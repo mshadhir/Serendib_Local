@@ -5,12 +5,11 @@ import { useLang } from "@/context/LangContext";
 import LanguageSwitcher from "@/components/site/LanguageSwitcher";
 
 const KEY_MAP = {
-  "Why Us": "nav.whyUs",
-  Packages: "nav.packages",
-  "Car & Driver": "nav.carAndDriver",
-  Experiences: "nav.experiences",
-  Team: "nav.team",
-  "Plan My Trip": "nav.planTrip",
+  Services: "nav.services",
+  Vehicles: "nav.vehicles",
+  Routes: "nav.routes",
+  Reviews: "nav.reviews",
+  FAQ: "nav.faq",
 };
 
 export default function Navbar() {
