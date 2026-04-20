@@ -1,6 +1,6 @@
 // Central copy + media for Serendib Local marketing site.
 
-const RAW_WA = process.env.REACT_APP_WHATSAPP_NUMBER || "+94771234567";
+const RAW_WA = process.env.REACT_APP_WHATSAPP_NUMBER || "+94716797971";
 
 export const BRAND = {
   name: "Serendib Local",
@@ -25,7 +25,7 @@ export const NAV_LINKS = [
 ];
 
 export const HERO = {
-  eyebrow: "SLTDA Licensed · 5★ on TripAdvisor · Private Tours since 2019",
+  eyebrow: "5★ on TripAdvisor · Private Tours since 2019",
   title: "Your Private Driver. Your Sri Lanka.",
   sub: "No fixed packages. No group buses. Just you, a local driver who grew up here, and a private car that goes wherever you want — at your pace.",
   image:
@@ -33,7 +33,7 @@ export const HERO = {
 };
 
 export const TRUST_ITEMS = [
-  { label: "SLTDA Licensed Operator", icon: "ShieldCheck" },
+  { label: "Licensed Tour Operator", icon: "ShieldCheck" },
   { label: "5-Star Rated on TripAdvisor", icon: "Star" },
   { label: "Private Car, Always", icon: "Car" },
   { label: "100% Local & Independent", icon: "Leaf" },
@@ -208,7 +208,7 @@ export const TRIP_EXPERIENCES = [
 ];
 
 export const TRUST_BADGES = [
-  "SLTDA Licensed",
+  "Licensed Tour Operator",
   "TripAdvisor Certified",
   "Sustainable Travel Partner",
   "Google-Verified Reviews",

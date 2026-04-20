@@ -53,7 +53,7 @@ export default function Terms() {
           <h2 className="font-display text-2xl text-[#111827]">5. Safety &amp; insurance</h2>
           <p>
             All our vehicles are licensed, insured and regularly maintained. Our drivers
-            are licensed chauffeur-guides registered with the SLTDA. We strongly recommend
+            are licensed chauffeur-guides. We strongly recommend
             you hold valid travel insurance covering health, theft and trip interruption.
           </p>
 

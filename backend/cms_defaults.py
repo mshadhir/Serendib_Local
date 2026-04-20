@@ -12,10 +12,10 @@ CMS_DEFAULTS = {
         "brand_name": "Serendib Local",
         "tagline": "Your Private Driver. Your Sri Lanka.",
         "email": "hello@serendiblocal.com",
-        "whatsapp_number": "+94771234567",
+        "whatsapp_number": "+94716797971",
         "location": "Badulla, Sri Lanka",
         "currency_default": "USD",
-        "hero_eyebrow": "SLTDA Licensed · 5★ on TripAdvisor · Private Tours since 2019",
+        "hero_eyebrow": "5★ on TripAdvisor · Private Tours since 2019",
         "hero_title": "Your Private Driver. Your Sri Lanka.",
         "hero_sub": (
             "No fixed packages. No group buses. Just you, a local driver who grew up here, "
@@ -31,7 +31,7 @@ CMS_DEFAULTS = {
             "private day tours and fully-handled road trips with a local guide from Badulla. "
             "No group buses. No middlemen. WhatsApp us to design your route."
         ),
-        "seo_keywords": "Sri Lanka private driver, car and driver Sri Lanka, Sigiriya tour, Ella tour, Kandy driver, SLTDA licensed, Badulla",
+        "seo_keywords": "Sri Lanka private driver, car and driver Sri Lanka, Sigiriya tour, Ella tour, Kandy driver, licensed tour operator, Badulla",
         "seo_og_image": (
             "https://images.unsplash.com/photo-1621358670052-d34a786a9385?crop=entropy&cs=srgb&fm=jpg"
             "&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwyfHxzcmklMjBsYW5rYSUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NzY0ODM5OTZ8MA&ixlib=rb-4.1.0&q=85"
@@ -237,7 +237,7 @@ CMS_DEFAULTS = {
 
     # ---------- Trust bar ----------
     "trust_items": [
-        {"label": "SLTDA Licensed Operator",       "icon": "ShieldCheck", "order": 1},
+        {"label": "Licensed Tour Operator",         "icon": "ShieldCheck", "order": 1},
         {"label": "5-Star Rated on TripAdvisor",   "icon": "Star",        "order": 2},
         {"label": "Private Car, Always",           "icon": "Car",         "order": 3},
         {"label": "100% Local & Independent",      "icon": "Leaf",        "order": 4},

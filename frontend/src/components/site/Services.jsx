@@ -96,7 +96,7 @@ export default function Services() {
                 </button>
 
                 <a
-                  href={`https://wa.me/${String(process.env.REACT_APP_WHATSAPP_NUMBER || "94771234567").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hi! Can you send me a custom quote for ${s.title}?`)}`}
+                  href={`https://wa.me/${String(process.env.REACT_APP_WHATSAPP_NUMBER || "94716797971").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hi! Can you send me a custom quote for ${s.title}?`)}`}
                   target="_blank"
                   rel="noreferrer"
                   className={`mt-3 inline-flex items-center justify-center gap-1.5 text-xs underline underline-offset-4 ${isPopular ? "text-sand-50/75 hover:text-sand-50" : "text-[#4B5563] hover:text-jungle-700"}`}

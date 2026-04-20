@@ -19,7 +19,7 @@ export const DICT = {
     "nav.team": "Team",
     "nav.planTrip": "Plan My Trip",
     "nav.whatsapp": "WhatsApp us",
-    "hero.eyebrow": "SLTDA Licensed · 5★ on TripAdvisor · Private Tours since 2019",
+    "hero.eyebrow": "5★ on TripAdvisor · Private Tours since 2019",
     "hero.sub":
       "No fixed packages. No group buses. Just you, a local driver who grew up here, and a private car that goes wherever you want — at your pace.",
     "hero.ctaPackages": "Book a Day Tour",
@@ -77,7 +77,7 @@ export const DICT = {
     "nav.team": "Team",
     "nav.planTrip": "Reise Planen",
     "nav.whatsapp": "Schreib uns",
-    "hero.eyebrow": "SLTDA-lizenziert · 5★ auf TripAdvisor · Private Touren seit 2019",
+    "hero.eyebrow": "5★ auf TripAdvisor · Private Touren seit 2019",
     "hero.sub":
       "Keine festen Pakete. Keine Gruppen-Busse. Nur du, ein lokaler Fahrer und ein Privatwagen — dort, wo du willst, in deinem Tempo.",
     "hero.ctaPackages": "Tagestour buchen",
@@ -135,7 +135,7 @@ export const DICT = {
     "nav.team": "Équipe",
     "nav.planTrip": "Mon Voyage",
     "nav.whatsapp": "Écris-nous",
-    "hero.eyebrow": "Licencié SLTDA · 5★ sur TripAdvisor · Voyages privés depuis 2019",
+    "hero.eyebrow": "5★ sur TripAdvisor · Voyages privés depuis 2019",
     "hero.sub":
       "Pas de forfaits figés. Pas de bus en groupe. Juste toi, un chauffeur local et une voiture privée — où tu veux, à ton rythme.",
     "hero.ctaPackages": "Réserver une journée",
