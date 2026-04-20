@@ -235,6 +235,44 @@ CMS_DEFAULTS = {
          "image": "https://images.unsplash.com/photo-1719807633728-7ff13f7f2b61?w=800"},
     ],
 
+    # ---------- Team section copy (singleton — narrative + sidebar basics) ----------
+    "team_section": {
+        "eyebrow": "Meet the team",
+        "heading": "Friends from Badulla. One very well-loved car.",
+        "paragraph_1": (
+            "We're a small team of childhood friends from Badulla, a small town tucked into "
+            "the tea hills of Sri Lanka's Uva province. We rode the same Ella-to-Kandy train "
+            "on weekends to visit cousins, and spent every school holiday exploring a new "
+            "corner of the island — usually crammed into a dad's old Nissan with too many aunties."
+        ),
+        "paragraph_2": (
+            "By the time we finished school we'd basically driven the whole country: up to "
+            "Jaffna for kool, down to Mirissa for stilt fishermen, east to Arugam Bay the "
+            "week before surf season, west for crab in Negombo. What started as a habit "
+            "became the thing we loved most — showing friends-of-friends around, picking "
+            "them up from the airport at 3am, taking the long way home past the best kottu "
+            "shop nobody tells tourists about."
+        ),
+        "paragraph_3": (
+            "So three years ago we decided to just do it properly. We bought a comfortable "
+            "car, got our tour licences, built this little site, and started driving "
+            "travellers the way we drive our own friends: no rushed schedules, no group "
+            "buses, no commission-taking detours to gem shops. Just us, one air-conditioned "
+            "car, and whatever corner of Sri Lanka you want to see next."
+        ),
+        "paragraph_4": (
+            "If you book with us, you're not hiring a company. You're asking a Badulla-born "
+            "friend to drive you around his country — and he's pretty happy to."
+        ),
+        "basic_1": "Born & raised in Badulla, hill country",
+        "basic_2": "3+ years driving private guests across the island",
+        "basic_3": "Every corner of Sri Lanka — driven, eaten, slept in",
+        "footer_note": (
+            "Every booking goes directly to us — not a reseller. You'll chat with one of us "
+            "on WhatsApp, and one of us will be the person picking you up."
+        ),
+    },
+
     # ---------- Trust bar ----------
     "trust_items": [
         {"label": "Licensed Tour Operator",         "icon": "ShieldCheck", "order": 1},
@@ -252,6 +290,6 @@ LIST_COLLECTIONS = {
 }
 
 # Keys stored as singleton docs (PUT replaces the object).
-SINGLETON_COLLECTIONS = {"settings"}
+SINGLETON_COLLECTIONS = {"settings", "team_section"}
 
 ALL_KEYS = LIST_COLLECTIONS | SINGLETON_COLLECTIONS

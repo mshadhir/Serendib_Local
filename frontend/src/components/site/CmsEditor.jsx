@@ -138,6 +138,22 @@ export const CMS_SCHEMAS = {
       { name: "order", label: "Order", type: NUMBER },
     ],
   },
+  team_section: {
+    type: "singleton", label: "Team section (copy)",
+    description: "Narrative text + sidebar for the 'Meet the team' section.",
+    fields: [
+      { name: "eyebrow", label: "Eyebrow (uppercase label)", type: TEXT },
+      { name: "heading", label: "Heading", type: TEXT },
+      { name: "paragraph_1", label: "Paragraph 1", type: TEXTAREA },
+      { name: "paragraph_2", label: "Paragraph 2", type: TEXTAREA },
+      { name: "paragraph_3", label: "Paragraph 3", type: TEXTAREA },
+      { name: "paragraph_4", label: "Paragraph 4 (closing line)", type: TEXTAREA },
+      { name: "basic_1", label: "Sidebar basic #1", type: TEXT },
+      { name: "basic_2", label: "Sidebar basic #2", type: TEXT },
+      { name: "basic_3", label: "Sidebar basic #3", type: TEXT },
+      { name: "footer_note", label: "Sidebar footer note", type: TEXTAREA },
+    ],
+  },
   experiences: {
     type: "list", label: "Experiences gallery",
     fields: [
