@@ -273,6 +273,104 @@ CMS_DEFAULTS = {
         ),
     },
 
+    # ---------- Blog posts ----------
+    "blog_posts": [
+        {
+            "slug": "best-time-to-visit-sri-lanka",
+            "title": "The honest, month-by-month guide to the best time to visit Sri Lanka",
+            "excerpt": "Two monsoons, two coasts, and one big myth. Here's exactly what to expect every month — and why \"shoulder season\" might be your best-kept secret.",
+            "cover_image": "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=1600",
+            "author": "Kasun",
+            "published_at": "2026-01-18",
+            "read_minutes": 8,
+            "tag": "Planning",
+            "featured": True,
+            "order": 1,
+            "body": (
+                "Sri Lanka has two monsoons, and almost every travel blog on earth handles "
+                "this badly. Here's the short version: when the south-west is wet, the "
+                "north-east is dry. When the north-east is wet, the south-west is sunny. "
+                "There's always somewhere dry.\n\n"
+                "**December to March** is peak on the south coast, the west coast and the "
+                "hill country. Bright sun, dry roads, high-season prices. Book early.\n\n"
+                "**April** is our favourite shoulder month — still dry everywhere, fewer "
+                "tourists, Sinhala/Tamil New Year vibe in every village.\n\n"
+                "**May to August** is when the east coast — Arugam Bay, Trincomalee, Nilaveli — "
+                "comes alive. World-class surf, empty beaches, warm water. The south gets "
+                "occasional rain but rarely ruins a day.\n\n"
+                "**October–November** is the second shoulder: short showers in the afternoon, "
+                "everything blooms green, and hotel rates are the lowest they get all year.\n\n"
+                "Our honest advice? Don't plan around the weather. Plan around the coast "
+                "you want. We'll route you so you stay ahead of the rain."
+            ),
+        },
+        {
+            "slug": "car-and-driver-vs-renting",
+            "title": "Renting a car in Sri Lanka? Read this before you book.",
+            "excerpt": "Left-hand driving, kamikaze buses, 2-hour police stops for foreigners. Here's why 94% of our guests say hiring a driver was the best decision they made.",
+            "cover_image": "https://images.unsplash.com/photo-1534545872802-0579930815c2?w=1600",
+            "author": "Tharushi",
+            "published_at": "2026-01-05",
+            "read_minutes": 6,
+            "tag": "Getting around",
+            "featured": True,
+            "order": 2,
+            "body": (
+                "People ask us all the time whether they should just rent a car and drive "
+                "themselves. The short answer is: almost certainly no. Here's why.\n\n"
+                "First, the legal bit. Sri Lanka requires a temporary Sri Lankan driver's "
+                "licence on top of your international permit — you apply in person in Colombo, "
+                "it takes half a day, and they still sometimes reject you for reasons nobody "
+                "can explain.\n\n"
+                "Second, the road itself. We drive on the left. Trucks and buses drive "
+                "wherever the hell they want. Goats, tuk-tuks, elephants and funeral "
+                "processions share the road. Average rural driving speed is 35 km/h. A "
+                "5-hour trip on Google Maps is 7 hours in real life.\n\n"
+                "Third, the actually-useful stuff. Your driver is your on-the-ground "
+                "translator, fixer, restaurant-finder, parking attendant, temple guide and "
+                "3am-emergency backup. He'll get you the local price on safari tickets, "
+                "know where the petrol shortage is that week, and spot the roti cart you "
+                "would have driven straight past.\n\n"
+                "We're biased, obviously. But the maths is simple: a driver costs you "
+                "$85–140 a day including fuel. Self-driving costs you the same in car rental "
+                "+ fuel + the three extra hours a day you'll spend lost."
+            ),
+        },
+        {
+            "slug": "beyond-mirissa-south-coast-secrets",
+            "title": "Beyond Mirissa: 7 south-coast coves we only share with friends",
+            "excerpt": "Mirissa is beautiful but overrun. Here are seven quieter beaches where the only soundtrack is the stilt fishermen — and a honest review of each.",
+            "cover_image": "https://images.unsplash.com/photo-1653959747793-c7c3775665f0?w=1600",
+            "author": "Kasun",
+            "published_at": "2025-12-14",
+            "read_minutes": 7,
+            "tag": "Hidden",
+            "featured": True,
+            "order": 3,
+            "body": (
+                "Mirissa is the TikTok beach. It's gorgeous, but it's also where every "
+                "group bus on the south coast drops its guests at 11am. If you want the "
+                "Sri Lanka we grew up with, here are seven alternatives.\n\n"
+                "**Hiriketiya** — horseshoe cove, reliable surf, best smoothie bowls on "
+                "the coast. Busy but still intimate. Go early.\n\n"
+                "**Dickwella** — five minutes down the road, long empty beach, calm water. "
+                "Perfect for families. Ask your driver about the blowhole nearby.\n\n"
+                "**Talalla** — where our friends who moved to the south live. No parties. "
+                "Long sunsets. A few boutique homestays and nothing else.\n\n"
+                "**Kabalana** — point break that the pro surfers keep quiet about. 20 min "
+                "from Weligama. Dawn only.\n\n"
+                "**Madiha** — Weligama's overlooked cousin. Wide golden beach, cheap "
+                "guesthouses, a cricket pitch on the sand every Sunday.\n\n"
+                "**Kogala** — the last stilt fishermen still working this stretch. Pay "
+                "them for a photo (they earn more posing than fishing now).\n\n"
+                "**Unawatuna's eastern end** — everyone piles into Unawatuna bay. Walk 500m "
+                "east along the rocks and you have your own cove. Bring snorkels.\n\n"
+                "Tell your driver which of these you want to see and he'll work them into "
+                "the route. No buses, no crowds."
+            ),
+        },
+    ],
+
     # ---------- Trust bar ----------
     "trust_items": [
         {"label": "Licensed Tour Operator",         "icon": "ShieldCheck", "order": 1},
@@ -287,6 +385,7 @@ LIST_COLLECTIONS = {
     "services", "vehicles", "locations", "trip_experiences",
     "stay_budgets", "stay_styles", "reviews", "faqs",
     "concierge", "sample_routes", "team", "experiences", "trust_items",
+    "blog_posts",
 }
 
 # Keys stored as singleton docs (PUT replaces the object).

@@ -780,6 +780,7 @@ async def sitemap():
     base = (settings.get("site_url") or "").rstrip("/") or ""
     # Pull dynamic slugs for sample routes so they get indexed individually (hash links).
     routes = await _cms_fetch("sample_routes")
+    posts = await _cms_fetch("blog_posts")
     urls = [
         (f"{base}/", "1.0", "weekly"),
         (f"{base}/#services", "0.9", "weekly"),
@@ -788,6 +789,7 @@ async def sitemap():
         (f"{base}/#reviews", "0.7", "monthly"),
         (f"{base}/#faq", "0.7", "monthly"),
         (f"{base}/#trip-builder", "0.9", "weekly"),
+        (f"{base}/blog", "0.8", "weekly"),
         (f"{base}/privacy", "0.3", "yearly"),
         (f"{base}/terms", "0.3", "yearly"),
     ]
@@ -795,6 +797,10 @@ async def sitemap():
         slug = r.get("slug")
         if slug:
             urls.append((f"{base}/#route-{slug}", "0.6", "monthly"))
+    for p in (posts or []):
+        slug = p.get("slug")
+        if slug:
+            urls.append((f"{base}/blog/{slug}", "0.7", "monthly"))
     today = datetime.now(timezone.utc).date().isoformat()
     body = ['<?xml version="1.0" encoding="UTF-8"?>',
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']

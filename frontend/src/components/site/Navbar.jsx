@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { BRAND, NAV_LINKS, WHATSAPP_LINK } from "@/lib/siteData";
 import { useLang } from "@/context/LangContext";
@@ -8,6 +9,7 @@ const KEY_MAP = {
   Services: "nav.services",
   Vehicles: "nav.vehicles",
   Routes: "nav.routes",
+  Blog: "nav.blog",
   Reviews: "nav.reviews",
   FAQ: "nav.faq",
 };
@@ -36,7 +38,7 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
         <a
-          href="#top"
+          href="/"
           data-testid="nav-logo"
           className={`font-display text-2xl md:text-[1.75rem] leading-none tracking-tight ${baseText}`}
         >
@@ -45,16 +47,19 @@ export default function Navbar() {
         </a>
 
         <nav className="hidden md:flex items-center gap-10">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              data-testid={`nav-link-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
-              className={`text-sm tracking-wide hover:text-clay-500 transition-colors ${baseText}`}
-            >
-              {t(KEY_MAP[l.label]) || l.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((l) => {
+            const isExternalRoute = l.href.startsWith("/") && !l.href.startsWith("/#");
+            const common = {
+              "data-testid": `nav-link-${l.label.toLowerCase().replace(/\s+/g, "-")}`,
+              className: `text-sm tracking-wide hover:text-clay-500 transition-colors ${baseText}`,
+              children: t(KEY_MAP[l.label]) || l.label,
+            };
+            return isExternalRoute ? (
+              <Link key={l.href} to={l.href} {...common} />
+            ) : (
+              <a key={l.href} href={l.href} {...common} />
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2 md:gap-3">
@@ -85,16 +90,19 @@ export default function Navbar() {
       {open && (
         <div className="md:hidden bg-sand-50 border-t border-sand-200" data-testid="nav-mobile-menu">
           <div className="px-6 py-6 flex flex-col gap-4">
-            {NAV_LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="text-[#111827] text-base"
-              >
-                {t(KEY_MAP[l.label]) || l.label}
-              </a>
-            ))}
+            {NAV_LINKS.map((l) => {
+              const isExternalRoute = l.href.startsWith("/") && !l.href.startsWith("/#");
+              const common = {
+                onClick: () => setOpen(false),
+                className: "text-[#111827] text-base",
+                children: t(KEY_MAP[l.label]) || l.label,
+              };
+              return isExternalRoute ? (
+                <Link key={l.href} to={l.href} {...common} />
+              ) : (
+                <a key={l.href} href={l.href} {...common} />
+              );
+            })}
             <div className="pt-2">
               <LanguageSwitcher variant="light" />
             </div>

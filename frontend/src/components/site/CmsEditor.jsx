@@ -138,6 +138,23 @@ export const CMS_SCHEMAS = {
       { name: "order", label: "Order", type: NUMBER },
     ],
   },
+  blog_posts: {
+    type: "list", label: "Blog posts",
+    description: "Articles shown on /blog and the home-page carousel (featured = true).",
+    fields: [
+      { name: "slug", label: "Slug (URL)", type: TEXT },
+      { name: "title", label: "Title", type: TEXT },
+      { name: "excerpt", label: "Excerpt", type: TEXTAREA },
+      { name: "cover_image", label: "Cover image URL", type: URL },
+      { name: "author", label: "Author", type: TEXT },
+      { name: "published_at", label: "Published (YYYY-MM-DD)", type: TEXT },
+      { name: "read_minutes", label: "Read time (minutes)", type: NUMBER },
+      { name: "tag", label: "Tag / category", type: TEXT },
+      { name: "featured", label: "Show on home carousel? (true/false)", type: TEXT },
+      { name: "body", label: "Body (use blank lines for paragraphs; **bold**, *italic*)", type: TEXTAREA },
+      { name: "order", label: "Order", type: NUMBER },
+    ],
+  },
   team_section: {
     type: "singleton", label: "Team section (copy)",
     description: "Narrative text + sidebar for the 'Meet the team' section.",

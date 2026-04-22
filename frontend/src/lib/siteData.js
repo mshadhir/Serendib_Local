@@ -20,6 +20,7 @@ export const NAV_LINKS = [
   { label: "Services", href: "/#services" },
   { label: "Vehicles", href: "/#vehicles" },
   { label: "Routes", href: "/#routes" },
+  { label: "Blog", href: "/blog" },
   { label: "Reviews", href: "/#reviews" },
   { label: "FAQ", href: "/#faq" },
 ];

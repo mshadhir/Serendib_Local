@@ -15,6 +15,7 @@ import Team from "@/components/site/Team";
 import Reviews from "@/components/site/Reviews";
 import WhyBookDirect from "@/components/site/WhyBookDirect";
 import TripBuilder from "@/components/site/TripBuilder";
+import BlogCarousel from "@/components/site/BlogCarousel";
 import FAQ from "@/components/site/FAQ";
 import Instagram from "@/components/site/Instagram";
 import Footer from "@/components/site/Footer";
@@ -72,6 +73,7 @@ export default function Home() {
       <Experiences />
       <Team />
       <Reviews />
+      <BlogCarousel />
       <WhyBookDirect />
       <TripBuilder />
       <FAQ />
