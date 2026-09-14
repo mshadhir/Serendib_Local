@@ -19,6 +19,7 @@ Open `http://localhost:3000`. Owner dashboard: `/admin`. Run `npm run check` for
 
 ## Launch documents
 
+- [Google SEO and search launch](docs/SEO-LAUNCH.md): implemented changes, target searches, Search Console and ongoing measurement.
 - [Independent hosting and migration](docs/HOSTING.md): Render, Docker/VPS, domain, email and backups.
 - [Prices and service scope](docs/PRICING-AND-SCOPE.md): competitor sources, proposed rates, inclusions and costs to confirm.
 - [Launch decisions and verification](docs/LAUNCH.md): remaining business facts and live checks.

@@ -11,3 +11,5 @@ The site uses destination photographs, not photographs presented as the business
 The [Unsplash licence](https://unsplash.com/license) permits commercial use of its free images. These source images were visually inspected. Replace them with suitable original business photography when available, without implying that stock subjects are your customers.
 
 DM Sans and DM Serif Display are included through the pinned Fontsource packages. The build copies their font files and supplied licence texts into `fonts/` in the public output. The favicon is a simple original letter mark. Lucide supplies interface icons.
+
+Responsive derivatives use the same Unsplash originals: hero at 640/1200px and coast/train at 768px, delivered as WebP at quality 60. The original files remain available as larger candidates.

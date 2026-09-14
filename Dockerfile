@@ -4,6 +4,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY frontend ./frontend
 COPY content ./content
+COPY shared ./shared
 COPY scripts ./scripts
 COPY vite.config.mjs ./
 RUN npm run build && npm prune --omit=dev
@@ -16,6 +17,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/content ./content
 COPY package.json ./
 COPY backend ./backend
+COPY shared ./shared
 COPY scripts ./scripts
 RUN mkdir -p /var/data && chown node:node /var/data
 USER node

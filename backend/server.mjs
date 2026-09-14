@@ -4,10 +4,9 @@ import {existsSync,readFileSync} from 'node:fs';
 import {resolve,extname,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomUUID} from 'node:crypto';
+import {publicPaths,pageMeta,buildHead,sitemap,safeJSON} from '../shared/seo.mjs';
 import {openStore,checkPassword,inquirySchema,settingsSchema,statusSchema,estimate} from './store.mjs';
 const ROOT=fileURLToPath(new URL('../',import.meta.url));
-const escape=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-const safeJSON=v=>JSON.stringify(v).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
 const token=req=>(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('sl_session='))?.slice(11);
 const mime={'.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.jpg':'image/jpeg','.png':'image/png','.woff2':'font/woff2','.ico':'image/x-icon'};
 class HttpError extends Error{constructor(status,message){super(message);this.status=status}}
@@ -19,7 +18,7 @@ export function createApp({database=process.env.DATABASE_PATH||resolve(ROOT,'dat
  const store=openStore(database),secure=origin.startsWith('https://'),indexing=process.env.INDEXING_ENABLED==='true',pending=new Set();
  const cookie=(value,clear=false)=>'sl_session='+value+'; HttpOnly; SameSite=Strict; Path=/; Max-Age='+(clear?'0':'43200')+(secure?'; Secure':'');
  const server=createServer(async(req,res)=>{
-  res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('X-Frame-Options','DENY');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");if(secure)res.setHeader('Strict-Transport-Security','max-age=31536000');if(!indexing)res.setHeader('X-Robots-Tag','noindex, nofollow');
+  res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('X-Frame-Options','DENY');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");if(secure)res.setHeader('Strict-Transport-Security','max-age=31536000');if(!indexing)res.setHeader('X-Robots-Tag','noindex, follow');
   const send=(status,value,type='application/json; charset=utf-8')=>{res.statusCode=status;res.setHeader('Content-Type',type);if(!res.hasHeader('Cache-Control'))res.setHeader('Cache-Control','no-store');res.end(type.startsWith('application/json')?JSON.stringify(value):value)};
   try{
    const url=new URL(req.url,origin);let path;try{path=decodeURIComponent(url.pathname).replace(/\/$/,'')||'/'}catch{throw new HttpError(400,'Invalid path.')}
@@ -44,16 +43,19 @@ export function createApp({database=process.env.DATABASE_PATH||resolve(ROOT,'dat
    if(path==='/api/bookings/create-checkout'||path.startsWith('/api/payments/'))return send(410,{error:'Online checkout is unavailable. Please request a written quote.'});
    if(path.startsWith('/api/'))throw new HttpError(404,'Not found.');
    if(!['GET','HEAD'].includes(req.method))throw new HttpError(405,'Method not allowed.');
-   const c=store.content(),pages=['/','/routes','/plan','/about','/privacy','/terms',...c.routes.map(r=>'/routes/'+r.slug)];
-   if(path==='/robots.txt')return send(200,indexing?'User-agent: *\nDisallow: /admin\nDisallow: /api/\nSitemap: '+origin+'/sitemap.xml\n':'User-agent: *\nDisallow: /\n','text/plain; charset=utf-8');
-   if(path==='/sitemap.xml')return send(200,'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+pages.map(p=>'<url><loc>'+escape(origin+p)+'</loc></url>').join('')+'</urlset>','application/xml; charset=utf-8');
-   if(['/blog','/booking-confirmed'].includes(path)||path.startsWith('/blog/')){res.writeHead(302,{Location:path.startsWith('/blog')?'/routes':'/plan'});return res.end()}
+   const c=store.content(),pages=publicPaths(c);
+   const cleanPath=path.endsWith('/index.html')?(path.slice(0,-11)||'/'):path;
+   if(pages.includes(cleanPath)&&(url.pathname!==cleanPath||(indexing&&req.headers.host!==new URL(origin).host))){res.writeHead(308,{Location:origin+cleanPath+url.search});return res.end()}
+   if(path==='/robots.txt')return send(200,indexing?'User-agent: *\nDisallow: /api/\nSitemap: '+origin+'/sitemap.xml\n':'User-agent: *\nDisallow: /\n','text/plain; charset=utf-8');
+   if(path==='/sitemap.xml')return send(200,sitemap(c,origin),'application/xml; charset=utf-8');
+   if(path==='/blog'){res.writeHead(301,{Location:'/sri-lanka-itinerary-guide'});return res.end()}
+   if(path==='/booking-confirmed'){res.writeHead(302,{Location:'/plan'});return res.end()}
    const staticRoot=resolve(ROOT,'dist/client'),file=resolve(staticRoot,'.'+path);
    if(file.startsWith(staticRoot+sep)&&mime[extname(file)]){try{if((await stat(file)).isFile()){res.setHeader('Cache-Control',path.startsWith('/assets/')?'public, max-age=31536000, immutable':'public, max-age=86400');return send(200,await readFile(file),mime[extname(file)])}}catch{}throw new HttpError(404,'File not found.')}
-   const known=pages.includes(path)||path==='/admin';if(!renderer||!template)throw new HttpError(503,'Website build is missing. Run npm run build.');const route=c.routes.find(r=>path==='/routes/'+r.slug);
-   const titles={'/':'Sri Lanka, at your own pace','/routes':'Thoughtful routes around Sri Lanka','/plan':'Plan your Sri Lanka journey','/about':'Our approach','/privacy':'Privacy','/terms':'Booking information','/admin':'Private dashboard'},title=(route?.title||titles[path]||'Page not found')+' | Serendib Local',description=route?.summary||'Private car and driver requests in Sri Lanka. Flexible routes, clear guide prices and a journey planned around you.';
-   const head='<title>'+escape(title)+'</title><meta name="description" content="'+escape(description)+'"><link rel="canonical" href="'+escape(origin+path)+'"><meta property="og:title" content="'+escape(title)+'"><meta property="og:description" content="'+escape(description)+'"><meta property="og:type" content="website"><meta property="og:image" content="'+escape(origin+'/images/hero.webp')+'">'+(!indexing||!known||path==='/admin'?'<meta name="robots" content="noindex,nofollow">':'');
-   if(path==='/admin')res.setHeader('X-Robots-Tag','noindex,nofollow');return send(known?200:404,template.replace('<!--site-head-->',head).replace('<!--site-html-->',renderer(path,c,url.search)).replace('<!--site-data-->','<script type="application/json" id="site-data">'+safeJSON(c)+'</script>'),'text/html; charset=utf-8');
+   const known=pages.includes(path)||path==='/admin';if(!renderer||!template)throw new HttpError(503,'Website build is missing. Run npm run build.');
+   const meta=pageMeta(path,c),head=buildHead(path,c,{origin,indexing,verification:process.env.SEARCH_CONSOLE_VERIFICATION||''});
+   if(!meta.indexable)res.setHeader('X-Robots-Tag','noindex, follow');
+   return send(known?200:404,template.replace('<!--site-head-->',head).replace('<!--site-html-->',renderer(path,c,url.search)).replace('<!--site-data-->','<script type="application/json" id="site-data">'+safeJSON(c)+'</script>'),'text/html; charset=utf-8');
   }catch(e){const validation=Array.isArray(e.issues),status=e.status||(validation?422:500);if(status===500)console.error('Request failed:',e.name);return send(status,{error:validation?e.issues[0]?.message||'Check your details.':status===500?'Something went wrong. Please try again.':e.message})}
  });return {server,store,async close(){await new Promise(resolve=>server.close(resolve));await Promise.allSettled([...pending]);store.close()}};
 }

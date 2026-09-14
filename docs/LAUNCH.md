@@ -13,6 +13,8 @@ The owner has not yet confirmed the actual fleet/providers, operating costs, con
 
 ## What was checked during implementation
 
-The production build completed. Seven automated tests covered server rendering and asset responses, missing-page handling, form validation, seat limits, server-calculated prices, private enquiry access, password hashing, login/logout, CSRF/origin protection, rate limiting, contact/price updates, deletion, and live-database backup restoration. The production dependency audit reported no known vulnerabilities at the time of testing.
+The production build completed. The original seven integration tests covered server rendering and asset responses, missing-page handling, form validation, seat limits, server-calculated prices, private enquiry access, password hashing, login/logout, CSRF/origin protection, rate limiting, contact/price updates, deletion, and live-database backup restoration. The production dependency audit reported no known vulnerabilities at the time of testing.
 
 No live payments, customer enquiries, email delivery, domain change, paid hosting purchase, Docker image execution or production data migration were performed. The private review deploy is separate from the independent Node application's deployment.
+
+The additional SEO tests and final-domain indexing steps are documented in [SEO-LAUNCH.md](SEO-LAUNCH.md). Public launch still requires confirmed business details; private review access has not been changed.
