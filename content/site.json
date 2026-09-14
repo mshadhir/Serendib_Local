@@ -1,0 +1,40 @@
+{
+  "brand":"Serendib Local","email":"hello@serendiblocal.com","phone":"+94716797971","updated":"2026-09-14","dailyHours":8,"dailyKm":150,
+  "priceNote":"Planning estimates in USD for the whole vehicle. Your route, dates and luggage determine the written quote. Vehicle and driver availability are confirmed before any booking or payment.",
+  "vehicles":[
+    {"id":"sedan","name":"Private sedan","capacity":3,"price":59,"note":"A simple choice for solo travellers and couples.","luggage":"Usually 2 medium suitcases","availability":"Subject to confirmation"},
+    {"id":"suv","name":"Roomier SUV","capacity":4,"price":77,"note":"Request extra space for a small family.","luggage":"Space depends on the model","availability":"Arrange on request"},
+    {"id":"van","name":"Private minivan","capacity":6,"price":86,"note":"Travel together with family or friends.","luggage":"Confirm space for your group's bags","availability":"Arrange on request"}
+  ],
+  "routes":[
+    {"slug":"south-coast-slowly","title":"The south coast, slowly","tag":"COAST & CULTURE","days":5,"image":"/images/coast.webp","imageAlt":"Palm trees beside Sri Lanka's southern coast","summary":"Old fort streets, sea air and time to stay a little longer. A relaxed introduction with two coastal bases.","stops":["Colombo Airport","Galle","Mirissa","Colombo Airport"],"pace":"Two nights in Galle and two in Mirissa, with room for breaks on transfer days.","itinerary":[
+      {"day":"Day 1","title":"Arrive, then settle into Galle","text":"Travel from the airport to your accommodation. Keep the first day light and take a stroll if your arrival time allows."},
+      {"day":"Day 2","title":"Make time for the fort","text":"Explore Galle Fort at your own pace. Add a nearby coastal stop to the driving plan if you would like one."},
+      {"day":"Day 3","title":"Follow the coast to Mirissa","text":"Take the coastal road with agreed photo and lunch stops, then settle into your next base."},
+      {"day":"Day 4","title":"A day without a long transfer","text":"Enjoy your own beach time or ask for a short local drive. Water activities are not included or automatically arranged."},
+      {"day":"Day 5","title":"Return with room to spare","text":"Return to the airport or an airport-area hotel. Departure time is planned around your flight and expected traffic."}
+    ]},
+    {"slug":"culture-and-tea-country","title":"Culture & tea country","tag":"ANCIENT PLACES & GREEN HILLS","days":7,"image":"/images/hero.webp","imageAlt":"A village surrounded by Sri Lankan tea hills","summary":"A week between the Cultural Triangle, Kandy and cool tea hills, with fewer hotel changes and no race to the coast.","stops":["Colombo Airport","Sigiriya","Kandy","Nuwara Eliya","Colombo Airport"],"pace":"Two nights each in Sigiriya, Kandy and Nuwara Eliya. The final transfer is a longer road day.","itinerary":[
+      {"day":"Days 1–2","title":"Start in the Cultural Triangle","text":"Stay near Sigiriya, with time for Sigiriya Rock or Dambulla at your own pace. Entrance tickets and local guides are separate."},
+      {"day":"Days 3–4","title":"Slow down around Kandy","text":"Continue to Kandy and leave a full day for the lake, gardens or cultural sites you choose."},
+      {"day":"Days 5–6","title":"Climb into tea country","text":"Take the scenic road to Nuwara Eliya. Public viewpoints and a town walk keep the plan simple; estate access is checked separately."},
+      {"day":"Day 7","title":"A considered return","text":"Allow a generous buffer for the drive back to the airport. An airport-area overnight stay is a useful extension before an early flight."}
+    ]},
+    {"slug":"island-at-your-pace","title":"The island at your pace","tag":"A LITTLE OF EVERYTHING","days":10,"image":"/images/train.webp","imageAlt":"A train crossing the Nine Arches Bridge near Ella","summary":"Culture, tea country, Ella and a coastal finish. A thoughtful first journey with time beyond the car window.","stops":["Colombo Airport","Sigiriya","Kandy","Nuwara Eliya","Ella","Galle","Colombo Airport"],"pace":"Two nights in Sigiriya, one in Kandy, one in Nuwara Eliya, two in Ella and three around Galle.","itinerary":[
+      {"day":"Days 1–2","title":"Sigiriya and its surroundings","text":"Settle in after arrival, then spend a full day exploring your chosen Cultural Triangle sights. Admission is paid separately."},
+      {"day":"Day 3","title":"The road to Kandy","text":"Continue through Dambulla towards Kandy. Choose a small number of stops so the travel day stays comfortable."},
+      {"day":"Day 4","title":"A night in the hills","text":"Drive into tea country and stay in Nuwara Eliya. Make space for viewpoints and lunch along the way."},
+      {"day":"Days 5–6","title":"Ella, with time to explore","text":"Spend two nights in Ella. Choose public sights and your own walks. A train journey can replace part of the drive only if suitable tickets are secured."},
+      {"day":"Days 7–9","title":"A coastal finish","text":"Make the longer transfer to Galle, then enjoy two days without changing hotels. Add local drives or keep the days free."},
+      {"day":"Day 10","title":"Your journey home","text":"Travel back to the airport with a planned traffic buffer, or ask us to adapt the final drop-off."}
+    ]}
+  ],
+  "faqs":[
+    {"question":"What does the guide price cover?","answer":"The planning rate covers a private vehicle, driver and fuel for the agreed route, based on 8 hours and an average of 150 km per day over a multi-day hire. Driver meals and accommodation, ordinary parking and tolls for that route are included in the proposed quote. Every inclusion is confirmed before you book."},
+    {"question":"What is paid separately?","answer":"Your accommodation, meals, entrance tickets, attraction guides, train tickets, safari jeeps and other activities are separate. Extra distance, hours or route changes must be agreed and priced before they are added."},
+    {"question":"Is this an instant booking?","answer":"No. Send a request first. We check the route, dates, suitable vehicle and driver, then send a written quote. An enquiry does not reserve a vehicle or require payment."},
+    {"question":"Can you arrange a safari, train ride or hotel?","answer":"These are optional requests, not included services. We only offer to arrange one after checking an appropriate provider, availability, price and relevant requirements. Train seats and wildlife sightings are never guaranteed."},
+    {"question":"Are prices per person or per vehicle?","answer":"Guide prices are in US dollars for the whole vehicle. They are not multiplied by the number of guests. We confirm luggage capacity and the actual vehicle before accepting a booking."},
+    {"question":"How do payment and cancellations work?","answer":"You receive the exact amount, payment schedule and cancellation terms with your written quote before committing. There is no online checkout and no payment is needed to ask for a quote."}
+  ]
+}
