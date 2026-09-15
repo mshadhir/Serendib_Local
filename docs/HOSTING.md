@@ -4,6 +4,33 @@ The main application uses Node 24, React/Vite and SQLite. It needs one persisten
 
 The private Sites review is a static copy of the frontend. Its form and owner login are deliberately inactive and labelled. `.openai/hosting.json` controls only that review copy. `npm start` instead serves the real application, writes enquiries to SQLite, and enables the protected dashboard when the owner sets a password.
 
+## Your domain: serendiblocal.lk
+
+The owner confirmed on 15 September 2026 that `serendiblocal.lk` was purchased through Register.lk. Keep that registration in the owner's account. Buying the domain does not establish whether the package includes compatible application hosting or a working email mailbox; confirm the purchased package before buying another service.
+
+The proposed arrangement is Register.lk for the domain, the owner's GitHub repository for the source, and the owner's Render account for the complete application and enquiry database. The prepared Render service is in Singapore, with 0.5 CPU, 512 MB RAM and a 1 GB persistent disk. The current base compute and disk charges are USD 7 + USD 0.25 per month, before taxes, extra usage or any paid workspace plan. Confirm the amount shown in the account before purchase. [Render pricing](https://render.com/pricing), checked 15 September 2026. Domain renewal, a business mailbox and optional email delivery are separate costs unless an existing package covers them.
+
+### Launch sequence for this repository
+
+1. Confirm whether Register.lk supplied just the domain or hosting/email too. If hosting is included, check support for a persistent Node 24 process with `node:sqlite`, or Docker, before deciding whether to use it. A WordPress/PHP package alone does not establish compatibility with this application.
+2. If using Render, create or sign in to the owner's account, connect GitHub, and use `mshadhir/Serendib_Local`, branch `codex/independent-launch`, with the root `render.yaml`. The updated website is in that branch; `main` still contains the original draft. Review the resource price before creating it. The Render integration can assist after the owner connects it; account credentials and billing stay in the owner's account.
+3. Follow the Render setup below. Use the actual temporary service origin for `APP_ORIGIN` while testing. Verify the enquiry form, owner login, contact links, persistence after restart and a restorable backup. A Render web-service URL is public unless access protection is added; `INDEXING_ENABLED=false` only controls search indexing and is not password protection. The existing Sites review remains private.
+4. Once the test deployment and launch details are approved, add `serendiblocal.lk` under Render's Custom Domains. Render also adds `www.serendiblocal.lk` and redirects it to the root domain. Inspect the current authoritative nameservers and DNS records before editing them. Use the DNS provider actually serving the domain; this may be Register.lk or a provider selected in its nameserver settings.
+5. Apply the exact DNS values supplied for the deployed service, preserve existing mail records, and verify the domain and HTTPS in Render. Do not replace the whole DNS zone or switch nameservers just to add website records. See the table below for the expected record types, not a completed DNS change.
+6. Set `APP_ORIGIN=https://serendiblocal.lk`, redeploy and test through that address. Confirm the actual business email and WhatsApp number. The draft still uses `hello@serendiblocal.com`; ownership of the `.lk` domain does not create `hello@serendiblocal.lk` or confirm access to the `.com` mailbox. Change the website contact only after the intended mailbox or forwarding service is working.
+7. After the public launch checks pass, enable indexing, verify ownership in Google Search Console and submit `https://serendiblocal.lk/sitemap.xml`. Follow [SEO-LAUNCH.md](SEO-LAUNCH.md). Keep the previous service available until the replacement works.
+
+### Expected website DNS records
+
+| Name | Record | Value after the Render service exists |
+| --- | --- | --- |
+| `@` (root) | `A`, if the DNS provider does not offer an apex alias | Render currently documents `216.24.57.1`; confirm against the service's instructions before applying. |
+| `www` | `CNAME` | The actual `onrender.com` hostname assigned to this service, without `https://` or a path. |
+
+Providers supporting an apex `ALIAS`/`ANAME` or CNAME flattening can use Render's documented alternative. Cloudflare requires its own Render DNS instructions. Resolve conflicting website A/AAAA/CNAME records only for the names being connected; preserve unrelated subdomains and existing MX, SPF, DKIM and DMARC records. [Render DNS instructions](https://render.com/docs/configure-other-dns), [domain verification and HTTPS](https://render.com/docs/custom-domains).
+
+Next owner inputs: the Register.lk package name or a screenshot of its services, a Render account connection if proceeding with Render, and the monitored business email/WhatsApp. A screenshot of the domain's DNS/nameserver settings is sufficient for guided setup. Never share account passwords, two-factor codes or API secrets in chat.
+
 ## Run locally
 
 Install Node 24, then run from this repository:
