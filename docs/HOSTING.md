@@ -1,5 +1,7 @@
 # Independent hosting
 
+**Current selection (16 September 2026): Railway.** Follow [RAILWAY.md](RAILWAY.md) for deployment and migration of the domain already connected to the previous draft. The Render instructions below are retained as an alternative only; do not apply Render DNS records to the Railway service.
+
 The main application uses Node 24, React/Vite and SQLite. It needs one persistent process and disk. It does not need Emergent, MongoDB, Stripe, PostHog or Sites to run. Images and fonts are served locally.
 
 The private Sites review is a static copy of the frontend. Its form and owner login are deliberately inactive and labelled. `.openai/hosting.json` controls only that review copy. `npm start` instead serves the real application, writes enquiries to SQLite, and enables the protected dashboard when the owner sets a password.

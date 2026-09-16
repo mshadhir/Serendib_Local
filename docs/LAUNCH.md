@@ -1,5 +1,7 @@
 # Before the public business launch
 
+The owner selected Railway and confirmed that the domain serves the previous draft. Deploy and verify the replacement first, then follow [RAILWAY.md](RAILWAY.md) for the domain switch and rollback plan. Existing customer records are not migrated by changing DNS.
+
 The owner confirmed `serendiblocal.lk`, registered through Register.lk, on 15 September 2026. The hosting package/account, actual fleet/providers, operating costs and contact details still need confirmation. The site is therefore a private review, and the proposed prices are not a cost-approved sales offer. Domain-specific deployment instructions are in [HOSTING.md](HOSTING.md#your-domain-serendiblocallk).
 
 - Confirm which vehicles and drivers can be provided, their capacity and availability, and requirements relevant to operating the service. Remove vehicle options you cannot arrange.

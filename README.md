@@ -19,6 +19,7 @@ Open `http://localhost:3000`. Owner dashboard: `/admin`. Run `npm run check` for
 
 ## Launch documents
 
+- [Railway deployment and existing-domain migration](docs/RAILWAY.md): selected hosting provider, persistent storage, test deployment and switching serendiblocal.lk from the previous draft.
 - [Google SEO and search launch](docs/SEO-LAUNCH.md): implemented changes, target searches, Search Console and ongoing measurement.
 - [Independent hosting and migration](docs/HOSTING.md): Render, Docker/VPS, domain, email and backups.
 - [Prices and service scope](docs/PRICING-AND-SCOPE.md): competitor sources, proposed rates, inclusions and costs to confirm.
