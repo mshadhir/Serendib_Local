@@ -1,7 +1,8 @@
+import {guideHub,planningGuides,planningPaths} from './guides.mjs';
 // One page registry for server rendering, static previews, breadcrumbs and sitemap.
 export const servicePaths = ['/sri-lanka-private-driver', '/colombo-airport-transfers', '/sri-lanka-driver-cost'];
 export const guidePath = '/sri-lanka-itinerary-guide';
-export const publicPaths = c => ['/', '/routes', ...servicePaths, guidePath, '/plan', '/about', '/privacy', '/terms', ...c.routes.map(r => '/routes/' + r.slug)];
+export const publicPaths = c => ['/', '/routes', ...servicePaths, guidePath, ...planningPaths, '/plan', '/about', '/privacy', '/terms', ...c.routes.map(r => '/routes/' + r.slug)];
 export const escapeHTML = v => String(v).replace(/[&<>"']/g, x => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[x]);
 export const safeJSON = v => JSON.stringify(v).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 
@@ -27,6 +28,9 @@ export function pageMeta(path, c) {
     'island-at-your-pace': 'Plan a 10 day Sri Lanka itinerary through Sigiriya, Kandy, Nuwara Eliya, Ella and Galle. See overnight stops and private car-and-driver estimates.',
   };
   const routeTitles = {'south-coast-slowly':'5 Day Sri Lanka South Coast Itinerary','culture-and-tea-country':'7 Day Sri Lanka Itinerary: Culture & Tea Country','island-at-your-pace':'10 Day Sri Lanka Itinerary: Culture, Hills & Coast'};
+  const guide = planningGuides.find(g => g.path === path);
+  pages[guideHub] = ['Sri Lanka Travel Guide: Routes, Drivers & Airport Pickups', 'Plan your Sri Lanka holiday with practical guides for visitors from the UK, Australia and India, family transport advice and CMB airport transfer routes.', 'Travel guides'];
+  if(guide) pages[path] = [guide.title, guide.description, guide.label];
   const values = route ? [routeTitles[route.slug], routeDescriptions[route.slug], route.days + ' day itinerary'] : pages[path];
   const known = !!values;
   const [title, description, label] = values || ['Page Not Found', 'This page could not be found. Explore Serendib Local routes or plan a private Sri Lanka journey.', 'Page not found'];
@@ -35,7 +39,7 @@ export function pageMeta(path, c) {
 
 export function breadcrumbs(path, c) {
   if (path === '/' || !pageMeta(path,c).known || path === '/admin') return [];
-  return [{name:'Home',path:'/'}, ...(path.startsWith('/routes/') ? [{name:'Sri Lanka itineraries',path:'/routes'}] : []), {name:pageMeta(path,c).label,path}];
+  return [{name:'Home',path:'/'}, ...(planningGuides.some(g=>g.path===path)?[{name:'Travel guides',path:guideHub}]:[]), ...(path.startsWith('/routes/') ? [{name:'Sri Lanka itineraries',path:'/routes'}] : []), {name:pageMeta(path,c).label,path}];
 }
 
 export function structuredData(path,c,origin) {
@@ -43,9 +47,13 @@ export function structuredData(path,c,origin) {
   const url=origin+path, org=origin+'/#organization', site=origin+'/#website';
   const graph=[{'@type':'Organization','@id':org,name:c.brand,url:origin+'/'}, {'@type':'WebSite','@id':site,url:origin+'/',name:c.brand,inLanguage:'en',publisher:{'@id':org}}];
   const crumbs=breadcrumbs(path,c);
-  graph.push({'@type':path==='/routes'?'CollectionPage':path==='/about'?'AboutPage':'WebPage','@id':url+'#webpage',url,name:meta.title,description:meta.description,inLanguage:'en',isPartOf:{'@id':site},...(crumbs.length?{breadcrumb:{'@id':url+'#breadcrumb'}}:{})});
+  graph.push({'@type':(path==='/routes'||path===guideHub)?'CollectionPage':path==='/about'?'AboutPage':'WebPage','@id':url+'#webpage',url,name:meta.title,description:meta.description,inLanguage:'en',isPartOf:{'@id':site},...(crumbs.length?{breadcrumb:{'@id':url+'#breadcrumb'}}:{})});
   if(crumbs.length)graph.push({'@type':'BreadcrumbList','@id':url+'#breadcrumb',itemListElement:crumbs.map((b,i)=>({'@type':'ListItem',position:i+1,name:b.name,item:origin+b.path}))});
   if(servicePaths.slice(0,2).includes(path))graph.push({'@type':'Service','@id':url+'#service',name:path==='/colombo-airport-transfers'?'Colombo airport transfer requests':'Sri Lanka private car and driver requests',url,description:meta.description,provider:{'@id':org},areaServed:{'@type':'Country',name:'Sri Lanka'}});
+  const guide=planningGuides.find(g=>g.path===path);
+  if(guide)graph.push({'@type':'Article','@id':url+'#article',headline:guide.title,description:guide.description,inLanguage:'en',dateModified:'2026-09-18',author:{'@id':org},publisher:{'@id':org},mainEntityOfPage:{'@id':url+'#webpage'}});
+  if(guide?.service==='airport')graph.push({'@type':'Service','@id':url+'#service',name:guide.title,url,description:guide.description,provider:{'@id':org},areaServed:{'@type':'Country',name:'Sri Lanka'}});
+  if(path===guideHub)graph.push({'@type':'ItemList',itemListElement:planningGuides.map((g,i)=>({'@type':'ListItem',position:i+1,name:g.title,url:origin+g.path}))});
   if(path==='/routes')graph.push({'@type':'ItemList',itemListElement:c.routes.map((r,i)=>({'@type':'ListItem',position:i+1,name:r.days+' day Sri Lanka itinerary: '+r.title,url:origin+'/routes/'+r.slug}))});
   return {'@context':'https://schema.org','@graph':graph};
 }

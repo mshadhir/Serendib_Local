@@ -8,6 +8,7 @@ import {defaults} from '../backend/store.mjs';
 import {createApp} from '../backend/server.mjs';
 import {render} from '../dist/server/server.js';
 import {publicPaths,pageMeta,breadcrumbs,buildHead,structuredData,sitemap,servicePaths,guidePath} from '../shared/seo.mjs';
+import {planningGuides,planningPaths,guideHub} from '../shared/guides.mjs';
 import {imageSources} from '../shared/images.mjs';
 const origin='https://travel.example.com';
 
@@ -71,7 +72,7 @@ test('production server redirects duplicate URLs, serves SEO pages and exposes n
  try{
   for(const [path,target] of [['/routes/','/routes'],['/routes/index.html','/routes'],['/index.html','/'],['/sri-lanka-driver-cost/?utm_source=test','/sri-lanka-driver-cost?utm_source=test']]){const r=await get(path);assert.equal(r.status,308,path);assert.equal(r.headers.get('location'),origin+target)}
   assert.equal((await get('/','alternate.example.com')).headers.get('location'),origin+'/');
-  for(const path of [...servicePaths,guidePath]){const r=await get(path);assert.equal(r.status,200,path);const html=await r.text();assert.match(html,/<script type="application\/ld\+json">/);assert.equal(r.headers.get('x-robots-tag'),null);for(const [,href] of html.matchAll(/href="(\/[^"#?]*)[^\"]*"/g)){const target=href||'/';const linked=await get(target);assert.ok([200,308].includes(linked.status),path+' → '+target);}}
+  for(const path of [...servicePaths,guidePath,...planningPaths]){const r=await get(path);assert.equal(r.status,200,path);const html=await r.text();assert.match(html,/<script type="application\/ld\+json">/);assert.equal(r.headers.get('x-robots-tag'),null);for(const [,href] of html.matchAll(/href="(\/[^"#?]*)[^\"]*"/g)){const target=href||'/';const linked=await get(target);assert.ok([200,308].includes(linked.status),path+' → '+target);}}
   assert.match((await get('/admin')).headers.get('x-robots-tag'),/noindex/);
   assert.equal((await get('/not-a-real-destination')).status,404);
   assert.equal((await get('/blog/missing-article')).status,404);
@@ -85,4 +86,21 @@ test('responsive image candidates are bundled and lighter than the original hero
  assert.ok(readFileSync('dist/client/images/hero-640.webp').length<readFileSync('dist/client/images/hero.webp').length);
  const html=render('/',defaults);assert.match(html,/srcSet=/);assert.match(html,/fetchPriority="high"/);
  for(const path of [...servicePaths,guidePath]){const html=readFileSync('dist/client'+path+'/index.html','utf8');assert.match(html,/noindex,follow/);assert.match(html,/<title>/);}
+});
+
+
+test('new guides are discoverable, have working section anchors and preserve editable guide prices',()=>{
+ const hub=render(guideHub,defaults);
+ for(const guide of planningGuides){
+  assert.ok(hub.includes('href="'+guide.path+'"'),guide.path);
+  const html=render(guide.path,defaults);
+  assert.ok(html.replace(/<[^>]*>/g,' ').split(/\s+/).length>350,guide.path);
+  for(const [,id] of html.matchAll(/href="#(section-\d+)"/g))assert.ok(html.includes('id="'+id+'"'),guide.path+' '+id);
+  assert.ok(html.includes('/plan?service='+(guide.service||'multi-day')));
+  assert.ok(structuredData(guide.path,defaults,origin)['@graph'].some(g=>g['@type']==='Article'));
+ }
+ const changed=structuredClone(defaults);changed.vehicles[0].price=123;
+ assert.match(render('/sri-lanka-holidays-from-uk',changed).replace(/<!--[\s\S]*?-->/g,''),/USD 123/);
+ assert.doesNotMatch(render('/colombo-airport-to-galle',changed).replace(/<!--[\s\S]*?-->/g,''),/USD 123/);
+ assert.equal(publicPaths(defaults).filter(p=>pageMeta(p,defaults).indexable).length,17);
 });
