@@ -51,7 +51,7 @@ export function structuredData(path,c,origin) {
   if(crumbs.length)graph.push({'@type':'BreadcrumbList','@id':url+'#breadcrumb',itemListElement:crumbs.map((b,i)=>({'@type':'ListItem',position:i+1,name:b.name,item:origin+b.path}))});
   if(servicePaths.slice(0,2).includes(path))graph.push({'@type':'Service','@id':url+'#service',name:path==='/colombo-airport-transfers'?'Colombo airport transfer requests':'Sri Lanka private car and driver requests',url,description:meta.description,provider:{'@id':org},areaServed:{'@type':'Country',name:'Sri Lanka'}});
   const guide=planningGuides.find(g=>g.path===path);
-  if(guide)graph.push({'@type':'Article','@id':url+'#article',headline:guide.title,description:guide.description,inLanguage:'en',dateModified:'2026-09-18',author:{'@id':org},publisher:{'@id':org},mainEntityOfPage:{'@id':url+'#webpage'}});
+  if(guide)graph.push({'@type':'Article','@id':url+'#article',headline:guide.title,description:guide.description,inLanguage:'en',dateModified:guide.updated||'2026-09-18',author:{'@id':org},publisher:{'@id':org},mainEntityOfPage:{'@id':url+'#webpage'}});
   if(guide?.service==='airport')graph.push({'@type':'Service','@id':url+'#service',name:guide.title,url,description:guide.description,provider:{'@id':org},areaServed:{'@type':'Country',name:'Sri Lanka'}});
   if(path===guideHub)graph.push({'@type':'ItemList',itemListElement:planningGuides.map((g,i)=>({'@type':'ListItem',position:i+1,name:g.title,url:origin+g.path}))});
   if(path==='/routes')graph.push({'@type':'ItemList',itemListElement:c.routes.map((r,i)=>({'@type':'ListItem',position:i+1,name:r.days+' day Sri Lanka itinerary: '+r.title,url:origin+'/routes/'+r.slug}))});

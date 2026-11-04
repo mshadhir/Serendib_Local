@@ -119,3 +119,21 @@ test('homepage identifies the business and service consistently for search and s
  assert.match(html,/<h1>Sri Lanka\.<br\/><em>Your private driver\.<\/em><\/h1>/);
  assert.match(html,/Explore at your own pace with Serendib Local/);
 });
+
+
+test('transfer enquiries preserve the selected destination without accepting arbitrary prefill',()=>{
+ for(const [key,town] of [['galle','Galle'],['sigiriya','Sigiriya']]){
+  const guide=planningGuides.find(g=>g.transfer===key);
+  assert.ok(render(guide.path,defaults).includes('/plan?service=airport&amp;transfer='+key));
+  const html=render('/plan',defaults,'?service=airport&transfer='+key);
+  assert.match(html,/value="Bandaranaike International Airport \(CMB\)"/);
+  assert.ok(html.includes('value="'+town+' — please add your hotel"'));
+  assert.match(html,/A quote for your exact transfer/);
+  assert.equal(structuredData(guide.path,defaults,origin)['@graph'].find(n=>n['@type']==='Article').dateModified,guide.updated);
+ }
+ assert.doesNotMatch(render('/plan',defaults,'?service=airport&transfer=untrusted-place'),/untrusted-place/);
+ assert.doesNotMatch(render('/plan',defaults,'?service=multi-day&transfer=galle'),/value="Galle/);
+ const changed=structuredClone(defaults);changed.vehicles[0].price=100;
+ const html=render('/sri-lanka-driver-cost',changed).replace(/<!--[\s\S]*?-->/g,'');
+ assert.match(html,/USD \$700 for the vehicle, equivalent to \$350 each/);
+});
