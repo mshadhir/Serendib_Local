@@ -104,3 +104,18 @@ test('new guides are discoverable, have working section anchors and preserve edi
  assert.doesNotMatch(render('/colombo-airport-to-galle',changed).replace(/<!--[\s\S]*?-->/g,''),/USD 123/);
  assert.equal(publicPaths(defaults).filter(p=>pageMeta(p,defaults).indexable).length,17);
 });
+
+
+test('homepage identifies the business and service consistently for search and sharing',()=>{
+ const meta=pageMeta('/',defaults);
+ assert.equal(meta.title,'Serendib Local | Sri Lanka Private Car & Driver');
+ assert.match(meta.description,/Serendib Local/);
+ assert.equal(meta.image,'/images/sigiriya.webp');
+ assert.ok(existsSync('dist/client'+meta.image));
+ const site=structuredData('/',defaults,origin)['@graph'].find(n=>n['@type']==='WebSite');
+ assert.equal(site.name,defaults.brand);
+ assert.equal(site.alternateName,new URL(origin).hostname);
+ const html=render('/',defaults);
+ assert.match(html,/<h1>Sri Lanka\.<br\/><em>Your private driver\.<\/em><\/h1>/);
+ assert.match(html,/Explore at your own pace with Serendib Local/);
+});

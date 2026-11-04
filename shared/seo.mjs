@@ -9,7 +9,7 @@ export const safeJSON = v => JSON.stringify(v).replace(/</g, '\\u003c').replace(
 export function pageMeta(path, c) {
   const rate = c.vehicles.find(v => v.id === 'sedan').price;
   const pages = {
-    '/': ['Sri Lanka Private Car & Driver', 'Plan your Sri Lanka journey with a private car and driver. Explore flexible 5, 7 and 10 day routes, transport guide prices and request a written quote.', 'Home'],
+    '/': ['Sri Lanka Private Car & Driver', 'Serendib Local helps you plan private car-and-driver journeys in Sri Lanka. Compare 5, 7 and 10 day routes, airport transfers and clear transport guide prices.', 'Home'],
     '/routes': ['Sri Lanka Itineraries: 5, 7 & 10 Days', 'Compare three Sri Lanka itineraries by private car: the south coast, culture and tea country, or a 10 day island loop. Transport estimates; hotels separate.', 'Sri Lanka itineraries'],
     '/sri-lanka-private-driver': ['Hire a Private Driver in Sri Lanka', 'Plan a private driver hire in Sri Lanka: compare vehicles, understand the daily allowance, choose a manageable route and request availability and a quote.', 'Private driver hire'],
     '/colombo-airport-transfers': ['Colombo Airport Transfers (CMB)', 'Request a private Colombo airport transfer to your accommodation or next destination. Share your flight, luggage and drop-off for a written transport quote.', 'Colombo airport transfers'],
@@ -34,7 +34,7 @@ export function pageMeta(path, c) {
   const values = route ? [routeTitles[route.slug], routeDescriptions[route.slug], route.days + ' day itinerary'] : pages[path];
   const known = !!values;
   const [title, description, label] = values || ['Page Not Found', 'This page could not be found. Explore Serendib Local routes or plan a private Sri Lanka journey.', 'Page not found'];
-  return {title: title + ' | Serendib Local', description, label, known, image: route?.image || '/images/hero.webp', imageAlt: route?.imageAlt || 'A village surrounded by Sri Lankan tea hills', indexable: known && !['/admin','/plan','/privacy','/terms'].includes(path)};
+  return {title: path === '/' ? 'Serendib Local | Sri Lanka Private Car & Driver' : title + ' | Serendib Local', description, label, known, image: route?.image || (path === '/' ? '/images/sigiriya.webp' : '/images/hero.webp'), imageAlt: route?.imageAlt || (path === '/' ? 'Sigiriya Lion Rock and its ancient summit ruins in Sri Lanka' : 'A village surrounded by Sri Lankan tea hills'), indexable: known && !['/admin','/plan','/privacy','/terms'].includes(path)};
 }
 
 export function breadcrumbs(path, c) {
@@ -45,7 +45,7 @@ export function breadcrumbs(path, c) {
 export function structuredData(path,c,origin) {
   const meta=pageMeta(path,c); if(!meta.indexable) return null;
   const url=origin+path, org=origin+'/#organization', site=origin+'/#website';
-  const graph=[{'@type':'Organization','@id':org,name:c.brand,url:origin+'/'}, {'@type':'WebSite','@id':site,url:origin+'/',name:c.brand,inLanguage:'en',publisher:{'@id':org}}];
+  const graph=[{'@type':'Organization','@id':org,name:c.brand,url:origin+'/',description:'Private car-and-driver journeys, airport transfer requests and route planning in Sri Lanka.',areaServed:{'@type':'Country',name:'Sri Lanka'}}, {'@type':'WebSite','@id':site,url:origin+'/',name:c.brand,alternateName:new URL(origin).hostname,inLanguage:'en',publisher:{'@id':org}}];
   const crumbs=breadcrumbs(path,c);
   graph.push({'@type':(path==='/routes'||path===guideHub)?'CollectionPage':path==='/about'?'AboutPage':'WebPage','@id':url+'#webpage',url,name:meta.title,description:meta.description,inLanguage:'en',isPartOf:{'@id':site},...(crumbs.length?{breadcrumb:{'@id':url+'#breadcrumb'}}:{})});
   if(crumbs.length)graph.push({'@type':'BreadcrumbList','@id':url+'#breadcrumb',itemListElement:crumbs.map((b,i)=>({'@type':'ListItem',position:i+1,name:b.name,item:origin+b.path}))});
