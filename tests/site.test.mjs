@@ -34,3 +34,16 @@ test('public pages render on the server, assets resolve, and missing pages retur
 test('enquiry rate limiting persists and airport enquiries do not invent a fare',()=>appTest(async({app,req})=>{for(let i=0;i<8;i++)assert.equal((await req('/api/inquiries','POST',{...inquiry,service:'airport',days:1})).status,201);assert.equal((await req('/api/inquiries','POST',inquiry)).status,429);assert.equal(app.store.db.prepare('SELECT estimate FROM inquiries LIMIT 1').get().estimate,null);assert.ok(app.store.db.prepare('SELECT COUNT(*) AS n FROM limits').get().n>0)}));
 test('live SQLite backup restores enquiries and settings',()=>appTest(async({app,req,dir})=>{await req('/api/inquiries','POST',inquiry);app.store.saveSettings({email:'owner@example.com',phone:'+94710000000',prices:{sedan:60,suv:80,van:90}});const destination=join(dir,'backup.sqlite');execFileSync(process.execPath,['scripts/backup.mjs',destination],{env:{...process.env,DATABASE_PATH:join(dir,'test.sqlite')},stdio:'pipe'});assert.ok(existsSync(destination));const restored=new DatabaseSync(destination);assert.equal(restored.prepare('SELECT COUNT(*) AS n FROM inquiries').get().n,1);assert.match(restored.prepare('SELECT payload FROM settings').get().payload,/owner@example.com/);restored.close()}));
 test('private review pages clearly identify the preview and include local fonts',()=>{assert.match(readFileSync('dist/client/index.html','utf8'),/PRIVATE PREVIEW/);assert.match(readFileSync('dist/client/plan/index.html','utf8'),/does not send or save/);for(const font of ['dm-sans.woff2','dm-serif.woff2'])assert.equal(readFileSync(resolve('dist/client/fonts',font)).subarray(0,4).toString(),'wOF2')});
+test('WhatsApp taps do not create bookings; only the owner can log and confirm a received enquiry',()=>appTest(async({req})=>{
+ const page='/colombo-airport-to-galle';
+ assert.equal((await req('/api/whatsapp-tap','POST',{page})).status,200);
+ const record={name:'Test guest',route:'Airport to Galle'};
+ assert.equal((await req('/api/admin/whatsapp','POST',record)).status,401);
+ const login=await req('/api/admin/login','POST',{password:'Temporary test passphrase only'}),headers={Cookie:login.headers.get('set-cookie').split(';')[0],'X-CSRF-Token':(await login.json()).csrf};
+ const list=async()=>await (await req('/api/admin/inquiries','GET',undefined,headers)).json();
+ const initial=await list();assert.equal(initial.total,0);assert.equal(initial.taps[0].taps,1);
+ assert.equal((await req('/api/admin/whatsapp','POST',record,headers)).status,201);
+ const item=(await list()).items[0];assert.equal(item.status,'new');assert.equal(item.payload.route,record.route);
+ assert.equal((await req('/api/admin/inquiries/'+item.id,'PATCH',{status:'confirmed'},headers)).status,200);
+ assert.equal((await list()).items[0].status,'confirmed');
+}));

@@ -1,5 +1,5 @@
 {
-  "brand":"Serendib Local","email":"hello@serendiblocal.com","phone":"+94716797971","updated":"2026-09-14","dailyHours":8,"dailyKm":150,
+  "brand":"Serendib Local","email":"hello@serendiblocal.lk","phone":"+94716797971","updated":"2026-09-14","dailyHours":8,"dailyKm":150,
   "priceNote":"Planning estimates in USD for the whole vehicle. Your route, dates and luggage determine the written quote. Vehicle and driver availability are confirmed before any booking or payment.",
   "vehicles":[
     {"id":"sedan","name":"Private sedan","capacity":3,"price":59,"note":"A simple choice for solo travellers and couples.","luggage":"Usually 2 medium suitcases","availability":"Subject to confirmation"},

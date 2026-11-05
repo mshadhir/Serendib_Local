@@ -6,7 +6,7 @@ The owner confirmed `serendiblocal.lk`, registered through Register.lk, on 15 Se
 
 - Confirm which vehicles and drivers can be provided, their capacity and availability, and requirements relevant to operating the service. Remove vehicle options you cannot arrange.
 - Approve or adjust the USD 59 / 77 / 86 guide rates and the hours, distance and cost inclusions. Ensure every quote remains viable after all costs.
-- Confirm that `hello@serendiblocal.com` and `+94716797971` are the correct monitored contacts; these were retained from the draft. If switching to `hello@serendiblocal.lk`, create and test the mailbox or forwarding service first, then update the site. Add the accurate business identity/address where appropriate. No invented information should be published.
+- Confirm that `hello@serendiblocal.lk` and `+94716797971` are the correct monitored contacts; these were retained from the draft. If switching to `hello@serendiblocal.lk`, create and test the mailbox or forwarding service first, then update the site. Add the accurate business identity/address where appropriate. No invented information should be published.
 - Decide the exact written booking, deposit/payment and cancellation conditions. The site presently takes enquiries only.
 - Set a unique owner password, deploy with persistent storage, verify contact links, submit a test enquiry and confirm it in the owner dashboard. Check the enquiry remains after a restart.
 - Configure email alerts or assign daily dashboard checks. Make and restore a backup. Remove development enquiries after checking.
