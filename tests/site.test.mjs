@@ -47,3 +47,27 @@ test('WhatsApp taps do not create bookings; only the owner can log and confirm a
  assert.equal((await req('/api/admin/inquiries/'+item.id,'PATCH',{status:'confirmed'},headers)).status,200);
  assert.equal((await list()).items[0].status,'confirmed');
 }));
+
+test('destination feedback stays private until approved and comes off the guide immediately when unpublished',()=>appTest(async({req})=>{
+ const path='/places-to-visit-in-sri-lanka', queue='/api/admin/place-notes';
+ const note={place:'sigiriya',name:'',note:'Allow time for the gardens & pools. $& <example>',consent:true};
+ assert.equal((await req('/api/place-notes','POST',{...note,consent:false})).status,422);
+ assert.equal((await req('/api/place-notes','POST',{...note,place:'unknown'})).status,422);
+ assert.equal((await req('/api/place-notes','POST',{...note,status:'published'})).status,422);
+ const submitted=await req('/api/place-notes','POST',note);assert.equal(submitted.status,201);
+ const {reference}=await submitted.json(), item=queue+'/'+reference;
+ assert.doesNotMatch(await (await req(path)).text(),/Allow time for the gardens/);
+ assert.equal((await req(queue)).status,401);assert.equal((await req(item,'PATCH',{status:'published'})).status,401);
+ const login=await req('/api/admin/login','POST',{password:'Temporary test passphrase only'}),cookie=login.headers.get('set-cookie').split(';')[0],h={Cookie:cookie,'X-CSRF-Token':(await login.json()).csrf};
+ assert.equal((await req(item,'PATCH',{status:'published'},{Cookie:cookie})).status,403);
+ const waiting=await (await req(queue,'GET',undefined,h)).json();assert.equal(waiting.items[0].id,reference);
+ assert.equal((await req(item,'PATCH',{status:'published'},h)).status,200);
+ const live=await (await req(path)).text();
+ assert.ok(live.includes('Allow time for the gardens &amp; pools. $&amp; &lt;example&gt;'));
+ assert.ok(live.includes('Anonymous traveller'));assert.ok(!live.includes(reference));
+ assert.ok(!JSON.stringify(await (await req('/api/site')).json()).includes(note.note));
+ assert.equal((await req(item,'PATCH',{status:'pending'},h)).status,200);
+ assert.doesNotMatch(await (await req(path)).text(),/Allow time for the gardens/);
+ assert.equal((await req(item,'DELETE',undefined,h)).status,200);
+ assert.equal((await (await req(queue,'GET',undefined,h)).json()).total,0);
+}));

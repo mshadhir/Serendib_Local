@@ -72,7 +72,7 @@ test('production server redirects duplicate URLs, serves SEO pages and exposes n
  try{
   for(const [path,target] of [['/routes/','/routes'],['/routes/index.html','/routes'],['/index.html','/'],['/sri-lanka-driver-cost/?utm_source=test','/sri-lanka-driver-cost?utm_source=test']]){const r=await get(path);assert.equal(r.status,308,path);assert.equal(r.headers.get('location'),origin+target)}
   assert.equal((await get('/','alternate.example.com')).headers.get('location'),origin+'/');
-  for(const path of [...servicePaths,guidePath,...planningPaths]){const r=await get(path);assert.equal(r.status,200,path);const html=await r.text();assert.match(html,/<script type="application\/ld\+json">/);assert.equal(r.headers.get('x-robots-tag'),null);for(const [,href] of html.matchAll(/href="(\/[^"#?]*)[^\"]*"/g)){const target=href||'/';const linked=await get(target);assert.ok([200,308].includes(linked.status),path+' → '+target);}}
+  for(const path of [...servicePaths,guidePath,...planningPaths,'/places-to-visit-in-sri-lanka']){const r=await get(path);assert.equal(r.status,200,path);const html=await r.text();assert.match(html,/<script type="application\/ld\+json">/);assert.equal(r.headers.get('x-robots-tag'),null);for(const [,href] of html.matchAll(/href="(\/[^"#?]*)[^\"]*"/g)){const target=href||'/';const linked=await get(target);assert.ok([200,308].includes(linked.status),path+' → '+target);}}
   assert.match((await get('/admin')).headers.get('x-robots-tag'),/noindex/);
   assert.equal((await get('/not-a-real-destination')).status,404);
   assert.equal((await get('/blog/missing-article')).status,404);
@@ -102,7 +102,7 @@ test('new guides are discoverable, have working section anchors and preserve edi
  const changed=structuredClone(defaults);changed.vehicles[0].price=123;
  assert.match(render('/sri-lanka-holidays-from-uk',changed).replace(/<!--[\s\S]*?-->/g,''),/USD 123/);
  assert.doesNotMatch(render('/colombo-airport-to-galle',changed).replace(/<!--[\s\S]*?-->/g,''),/USD 123/);
- assert.equal(publicPaths(defaults).filter(p=>pageMeta(p,defaults).indexable).length,17);
+ assert.equal(publicPaths(defaults).filter(p=>pageMeta(p,defaults).indexable).length,18);
 });
 
 
@@ -136,4 +136,15 @@ test('transfer enquiries preserve the selected destination without accepting arb
  const changed=structuredClone(defaults);changed.vehicles[0].price=100;
  const html=render('/sri-lanka-driver-cost',changed).replace(/<!--[\s\S]*?-->/g,'');
  assert.match(html,/USD \$700 for the vehicle, equivalent to \$350 each/);
+});
+
+test('the places guide connects all seven anchors, visitor accounts and existing routes',async()=>{
+ const {places,regions,placesPath}=await import('../shared/places.mjs');
+ const html=render(placesPath,defaults),graph=structuredData(placesPath,defaults,origin)['@graph'];
+ const list=graph.find(n=>n['@type']==='ItemList');
+ assert.deepEqual(list.itemListElement.map(i=>i.url),places.map(p=>origin+placesPath+'#'+p.id));
+ for(const p of places){assert.ok(html.includes('id="'+p.id+'"'));assert.ok(html.includes('href="'+p.source+'"'))}
+ for(const r of regions){assert.ok(html.includes('href="#'+r.id+'"'));assert.ok(html.includes('id="'+r.id+'"'));assert.ok(publicPaths(defaults).includes('/routes/'+r.route))}
+ for(const path of ['/',guideHub])assert.ok(render(path,defaults).includes('href="'+placesPath+'"'));
+ assert.equal(graph.some(n=>n['@type']==='Review'),false);
 });

@@ -1,8 +1,9 @@
 import {guideHub,planningGuides,planningPaths} from './guides.mjs';
+import {placesPath,places} from './places.mjs';
 // One page registry for server rendering, static previews, breadcrumbs and sitemap.
 export const servicePaths = ['/sri-lanka-private-driver', '/colombo-airport-transfers', '/sri-lanka-driver-cost'];
 export const guidePath = '/sri-lanka-itinerary-guide';
-export const publicPaths = c => ['/', '/routes', ...servicePaths, guidePath, ...planningPaths, '/plan', '/about', '/privacy', '/terms', ...c.routes.map(r => '/routes/' + r.slug)];
+export const publicPaths = c => ['/', '/routes', ...servicePaths, guidePath, placesPath, ...planningPaths, '/plan', '/about', '/privacy', '/terms', ...c.routes.map(r => '/routes/' + r.slug)];
 export const escapeHTML = v => String(v).replace(/[&<>"']/g, x => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[x]);
 export const safeJSON = v => JSON.stringify(v).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 
@@ -15,6 +16,7 @@ export function pageMeta(path, c) {
     '/colombo-airport-transfers': ['Colombo Airport Transfers (CMB)', 'Request a private Colombo airport transfer to your accommodation or next destination. Share your flight, luggage and drop-off for a written transport quote.', 'Colombo airport transfers'],
     '/sri-lanka-driver-cost': ['Sri Lanka Private Driver Cost & Guide Prices', 'See Sri Lanka car-and-driver planning rates from USD ' + rate + ' per vehicle per day, sample trip totals, inclusions and costs to check before accepting a quote.', 'Driver costs & prices'],
     [guidePath]: ['5, 7 or 10 Days in Sri Lanka? Itinerary Guide', 'Choose a realistic Sri Lanka itinerary for 5, 7 or 10 days. Compare coastal stays, culture and tea hills, hotel changes and time on the road.', 'Choosing your itinerary'],
+    [placesPath]: ['7 Places to Visit in Sri Lanka: Highlights & Traveller Tips', 'Explore seven Sri Lanka highlights, from Sigiriya and Ella to Galle and Mirissa, with short descriptions, firsthand traveller notes and routes that fit each stop.', 'Places to visit'],
     '/about': ['About Us: Sri Lanka Travel Planning', 'Meet Serendib Local, a new Sri Lanka travel business focused on private transport, realistic routes and clear written quotes before booking.', 'Our approach'],
     '/plan': ['Request a Sri Lanka Car & Driver Quote', 'Tell Serendib Local your route, dates, group size and luggage. Request a private car-and-driver or airport-transfer quote with no payment required.', 'Plan your journey'],
     '/privacy': ['Privacy Policy', 'How Serendib Local uses enquiry details, protects access to requests and handles correction or deletion requests.', 'Privacy'],
@@ -34,12 +36,12 @@ export function pageMeta(path, c) {
   const values = route ? [routeTitles[route.slug], routeDescriptions[route.slug], route.days + ' day itinerary'] : pages[path];
   const known = !!values;
   const [title, description, label] = values || ['Page Not Found', 'This page could not be found. Explore Serendib Local routes or plan a private Sri Lanka journey.', 'Page not found'];
-  return {title: path === '/' ? 'Serendib Local | Sri Lanka Private Car & Driver' : title + ' | Serendib Local', description, label, known, image: route?.image || (path === '/' ? '/images/sigiriya.webp' : '/images/hero.webp'), imageAlt: route?.imageAlt || (path === '/' ? 'Sigiriya Lion Rock and its ancient summit ruins in Sri Lanka' : 'A village surrounded by Sri Lankan tea hills'), indexable: known && !['/admin','/plan','/privacy','/terms'].includes(path)};
+  return {title: path === '/' ? 'Serendib Local | Sri Lanka Private Car & Driver' : title + ' | Serendib Local', description, label, known, image: route?.image || (path === placesPath ? '/images/train.webp' : path === '/' ? '/images/sigiriya.webp' : '/images/hero.webp'), imageAlt: route?.imageAlt || (path === placesPath ? 'Train crossing the Nine Arch Bridge near Ella' : path === '/' ? 'Sigiriya Lion Rock and its ancient summit ruins in Sri Lanka' : 'A village surrounded by Sri Lankan tea hills'), indexable: known && !['/admin','/plan','/privacy','/terms'].includes(path)};
 }
 
 export function breadcrumbs(path, c) {
   if (path === '/' || !pageMeta(path,c).known || path === '/admin') return [];
-  return [{name:'Home',path:'/'}, ...(planningGuides.some(g=>g.path===path)?[{name:'Travel guides',path:guideHub}]:[]), ...(path.startsWith('/routes/') ? [{name:'Sri Lanka itineraries',path:'/routes'}] : []), {name:pageMeta(path,c).label,path}];
+  return [{name:'Home',path:'/'}, ...((path===placesPath||planningGuides.some(g=>g.path===path))?[{name:'Travel guides',path:guideHub}]:[]), ...(path.startsWith('/routes/') ? [{name:'Sri Lanka itineraries',path:'/routes'}] : []), {name:pageMeta(path,c).label,path}];
 }
 
 export function structuredData(path,c,origin) {
@@ -47,12 +49,13 @@ export function structuredData(path,c,origin) {
   const url=origin+path, org=origin+'/#organization', site=origin+'/#website';
   const graph=[{'@type':'Organization','@id':org,name:c.brand,url:origin+'/',description:'Private car-and-driver journeys, airport transfer requests and route planning in Sri Lanka.',areaServed:{'@type':'Country',name:'Sri Lanka'}}, {'@type':'WebSite','@id':site,url:origin+'/',name:c.brand,alternateName:new URL(origin).hostname,inLanguage:'en',publisher:{'@id':org}}];
   const crumbs=breadcrumbs(path,c);
-  graph.push({'@type':(path==='/routes'||path===guideHub)?'CollectionPage':path==='/about'?'AboutPage':'WebPage','@id':url+'#webpage',url,name:meta.title,description:meta.description,inLanguage:'en',isPartOf:{'@id':site},...(crumbs.length?{breadcrumb:{'@id':url+'#breadcrumb'}}:{})});
+  graph.push({'@type':(path==='/routes'||path===guideHub||path===placesPath)?'CollectionPage':path==='/about'?'AboutPage':'WebPage','@id':url+'#webpage',url,name:meta.title,description:meta.description,inLanguage:'en',isPartOf:{'@id':site},...(crumbs.length?{breadcrumb:{'@id':url+'#breadcrumb'}}:{})});
   if(crumbs.length)graph.push({'@type':'BreadcrumbList','@id':url+'#breadcrumb',itemListElement:crumbs.map((b,i)=>({'@type':'ListItem',position:i+1,name:b.name,item:origin+b.path}))});
   if(servicePaths.slice(0,2).includes(path))graph.push({'@type':'Service','@id':url+'#service',name:path==='/colombo-airport-transfers'?'Colombo airport transfer requests':'Sri Lanka private car and driver requests',url,description:meta.description,provider:{'@id':org},areaServed:{'@type':'Country',name:'Sri Lanka'}});
   const guide=planningGuides.find(g=>g.path===path);
   if(guide)graph.push({'@type':'Article','@id':url+'#article',headline:guide.title,description:guide.description,inLanguage:'en',dateModified:guide.updated||'2026-09-18',author:{'@id':org},publisher:{'@id':org},mainEntityOfPage:{'@id':url+'#webpage'}});
   if(guide?.service==='airport')graph.push({'@type':'Service','@id':url+'#service',name:guide.title,url,description:guide.description,provider:{'@id':org},areaServed:{'@type':'Country',name:'Sri Lanka'}});
+  if(path===placesPath)graph.push({'@type':'ItemList','@id':url+'#places',mainEntityOfPage:{'@id':url+'#webpage'},itemListElement:places.map((p,i)=>({'@type':'ListItem',position:i+1,name:p.name,url:url+'#'+p.id}))});
   if(path===guideHub)graph.push({'@type':'ItemList',itemListElement:planningGuides.map((g,i)=>({'@type':'ListItem',position:i+1,name:g.title,url:origin+g.path}))});
   if(path==='/routes')graph.push({'@type':'ItemList',itemListElement:c.routes.map((r,i)=>({'@type':'ListItem',position:i+1,name:r.days+' day Sri Lanka itinerary: '+r.title,url:origin+'/routes/'+r.slug}))});
   return {'@context':'https://schema.org','@graph':graph};

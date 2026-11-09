@@ -1,4 +1,5 @@
 import React from 'react';
+import {placesPath} from '../../shared/places.mjs';
 import {whatsapp} from './App.jsx';
 import {ArrowUpRight} from 'lucide-react';
 import {guideHub,planningGuides} from '../../shared/guides.mjs';
@@ -8,7 +9,7 @@ export default function PlanningGuides({path,c}){
  const guide=planningGuides.find(g=>g.path===path);
  if(path===guideHub)return <>
   <section className="container page-heading"><p className="eyebrow">PRACTICAL HELP BEFORE YOU TRAVEL</p><h1>Your Sri Lanka<br/><em>travel planning guide.</em></h1><p>Choose a route, understand your transport budget and make the first airport pickup simpler. Start with the question you are trying to answer.</p></section>
-  <section className="container section guide-hub"><h2>Planning from abroad</h2><p>These guides cover the transport part of your holiday. They do not include flights, hotels or visa services.</p>{cards(planningGuides.slice(0,3))}
+  <section className="container section guide-hub"><h2>Where would you like to go?</h2><p>Compare temples, tea hills and coastal stops, with notes from people who visited.</p><Link href={placesPath}>Seven places to visit in Sri Lanka</Link><h2>Planning from abroad</h2><p>These guides cover the transport part of your holiday. They do not include flights, hotels or visa services.</p>{cards(planningGuides.slice(0,3))}
   <h2>Family journeys and airport routes</h2>{cards(planningGuides.slice(3))}
   <h2>Start with the essentials</h2><div className="guide-essentials"><Link href="/sri-lanka-private-driver">How private driver hire works</Link><Link href="/sri-lanka-driver-cost">Vehicle prices and inclusions</Link><Link href="/sri-lanka-itinerary-guide">Compare five, seven and ten days</Link><Link href="/colombo-airport-transfers">Airport pickup checklist</Link></div>
   <h2>Visiting from another country?</h2><p>Travellers from Germany, France, the Netherlands, Russia, China, the United States and Canada can use the same route, transfer and cost guides. Tell us your local arrival time, travel dates, passenger and luggage numbers, and preferred language when you enquire. Driver language availability must be checked before booking.</p><p>Our current website and written planning information are in English. USD guide prices are for the whole vehicle; they are not prices in euros, Canadian or Australian dollars, or your home currency. Confirm the final payment currency and check conversion fees with your payment provider.</p><p>If you are visiting relatives as well as sightseeing, tell us which days need transport. For a first visit, compare the overnight bases before selecting attractions. Your passport and transit route determine which official entry information you need to check.</p>

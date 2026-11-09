@@ -5,6 +5,8 @@ import {resolve,extname,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomUUID} from 'node:crypto';
 import {publicPaths,pageMeta,buildHead,sitemap,safeJSON} from '../shared/seo.mjs';
+import {placesPath} from '../shared/places.mjs';
+import {openPlaceNotes} from './place-notes.mjs';
 import {openStore,checkPassword,inquirySchema,settingsSchema,statusSchema,estimate} from './store.mjs';
 const ROOT=fileURLToPath(new URL('../',import.meta.url));
 const token=req=>(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('sl_session='))?.slice(11);
@@ -16,6 +18,7 @@ async function notify(store,id,service,origin){if(!emailConfigured())return;let 
 export function createApp({database=process.env.DATABASE_PATH||resolve(ROOT,'data/serendib.sqlite'),renderer=null,template=null}={}){
  const origin=(process.env.APP_ORIGIN||'http://localhost:'+(process.env.PORT||3000)).replace(/\/$/,'');if(new URL(origin).origin!==origin)throw Error('APP_ORIGIN must contain only the scheme and hostname (and port for local use).');
  const store=openStore(database),secure=origin.startsWith('https://'),indexing=process.env.INDEXING_ENABLED==='true',pending=new Set();
+ const placeNotes=openPlaceNotes(store.db);
  const cookie=(value,clear=false)=>'sl_session='+value+'; HttpOnly; SameSite=Strict; Path=/; Max-Age='+(clear?'0':'43200')+(secure?'; Secure':'');
  const server=createServer(async(req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('X-Frame-Options','DENY');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");if(secure)res.setHeader('Strict-Transport-Security','max-age=31536000');if(!indexing)res.setHeader('X-Robots-Tag','noindex, follow');
@@ -30,6 +33,18 @@ export function createApp({database=process.env.DATABASE_PATH||resolve(ROOT,'dat
    if(path==='/api/estimate'&&req.method==='GET'){try{return send(200,estimate(store.content(),url.searchParams.get('vehicle'),Number(url.searchParams.get('days'))))}catch{throw new HttpError(400,'Choose a vehicle and 1–30 days.')}}
    if(path==='/api/whatsapp-tap'&&req.method==='POST'){const b=await jsonBody(req);if(!publicPaths(store.content()).includes(b.page))throw new HttpError(400,'Unknown page');if(store.limit('wa:'+ip,20,3600000))store.db.prepare('INSERT INTO wa_clicks VALUES(?,1) ON CONFLICT(page) DO UPDATE SET taps=taps+1').run(b.page);return send(200,{ok:true})}
    if(path==='/api/admin/whatsapp'&&req.method==='POST'){auth();const b=await jsonBody(req);if(![b.name,b.route].every(s=>typeof s==='string'&&s.trim()&&s.length<=100))throw new HttpError(422,'Add a traveller name and route (up to 100 characters).');const payload={name:b.name.trim(),route:b.route.trim(),source:'WhatsApp',service:'WhatsApp enquiry'};store.db.prepare('INSERT INTO inquiries VALUES(?,?,?,?,?,?)').run(randomUUID(),new Date().toISOString(),'new',JSON.stringify(payload),null,'manual');return send(201,{ok:true})}
+   if(path==='/api/place-notes'&&req.method==='POST'){
+    if(!store.limit('place-note:'+ip,5,3600000))throw new HttpError(429,'Please wait before sending another note.');
+    return send(201,{reference:placeNotes.submit(await jsonBody(req))});
+   }
+   if(path==='/api/admin/place-notes'&&req.method==='GET'){
+    auth();return send(200,placeNotes.list(url.searchParams.get('status')||'pending',Number(url.searchParams.get('offset')||0)));
+   }
+   const noteMatch=path.match(/^\/api\/admin\/place-notes\/([a-f0-9-]{36})$/);
+   if(noteMatch&&['PATCH','DELETE'].includes(req.method)){
+    auth();const changed=req.method==='PATCH'?placeNotes.setStatus(noteMatch[1],await jsonBody(req)):placeNotes.remove(noteMatch[1]);
+    if(!changed)throw new HttpError(404,'Note not found.');return send(200,{ok:true});
+   }
    if(path==='/api/inquiries'&&req.method==='POST'){
     if(!store.limit('enquiry:'+ip,8,3600000))throw new HttpError(429,'Too many requests. Please try later or use WhatsApp.');const payload=inquirySchema.parse(await jsonBody(req));if(payload.website)throw new HttpError(422,'Unable to submit this request.');const id=randomUUID(),guide=payload.service==='airport'?null:estimate(store.content(),payload.vehicle,payload.days);const{website,...details}=payload;if(!publicPaths(store.content()).includes(details.sourcePage))delete details.sourcePage;
     store.db.prepare('INSERT INTO inquiries VALUES(?,?,?,?,?,?)').run(id,new Date().toISOString(),'new',JSON.stringify(details),guide?JSON.stringify(guide):null,emailConfigured()?'pending':'not-configured');
@@ -55,9 +70,10 @@ export function createApp({database=process.env.DATABASE_PATH||resolve(ROOT,'dat
    const staticRoot=resolve(ROOT,'dist/client'),file=resolve(staticRoot,'.'+path);
    if(file.startsWith(staticRoot+sep)&&mime[extname(file)]){try{if((await stat(file)).isFile()){res.setHeader('Cache-Control',path.startsWith('/assets/')?'public, max-age=31536000, immutable':'public, max-age=86400');return send(200,await readFile(file),mime[extname(file)])}}catch{}throw new HttpError(404,'File not found.')}
    const known=pages.includes(path)||path==='/admin';if(!renderer||!template)throw new HttpError(503,'Website build is missing. Run npm run build.');
+   if(path===placesPath)c.travellerNotes=placeNotes.published();
    const meta=pageMeta(path,c),head=buildHead(path,c,{origin,indexing,verification:process.env.SEARCH_CONSOLE_VERIFICATION||''});
    if(!meta.indexable)res.setHeader('X-Robots-Tag','noindex, follow');
-   return send(known?200:404,template.replace('<!--site-head-->',head).replace('<!--site-html-->',renderer(path,c,url.search)).replace('<!--site-data-->','<script type="application/json" id="site-data">'+safeJSON(c)+'</script>'),'text/html; charset=utf-8');
+   return send(known?200:404,template.replace('<!--site-head-->',()=>head).replace('<!--site-html-->',()=>renderer(path,c,url.search)).replace('<!--site-data-->',()=>'<script type="application/json" id="site-data">'+safeJSON(c)+'</script>'),'text/html; charset=utf-8');
   }catch(e){const validation=Array.isArray(e.issues),status=e.status||(validation?422:500);if(status===500)console.error('Request failed:',e.name);return send(status,{error:validation?e.issues[0]?.message||'Check your details.':status===500?'Something went wrong. Please try again.':e.message})}
  });return {server,store,async close(){await new Promise(resolve=>server.close(resolve));await Promise.allSettled([...pending]);store.close()}};
 }
