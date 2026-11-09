@@ -1,0 +1,21 @@
+services:
+  website:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        format: raw
+    environment:
+      PORT: 3000
+      DATABASE_PATH: /var/data/serendib.sqlite
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - serendib_data:/var/data
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  serendib_data:

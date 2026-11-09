@@ -1,0 +1,27 @@
+# Creates a paid web service with a persistent disk. Confirm the provider's
+# current charge in your own account before applying this Blueprint.
+services:
+  - type: web
+    name: serendib-local
+    runtime: docker
+    region: singapore
+    plan: 0.5c-512mb
+    autoDeployTrigger: off
+    healthCheckPath: /api/health
+    disk:
+      name: serendib-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: DATABASE_PATH
+        value: /var/data/serendib.sqlite
+      - key: APP_ORIGIN
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+      - key: INDEXING_ENABLED
+        value: "false"
+      - key: TRUST_PROXY
+        value: "1"
